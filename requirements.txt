@@ -1,0 +1,14 @@
+# Web API
+fastapi
+uvicorn[standard]
+pydantic
+requests
+python-dotenv
+pytest
+pytest-cov
+srsly
+
+# Model Developement
+tensorflow
+colorlog
+pyyaml>=5.3
