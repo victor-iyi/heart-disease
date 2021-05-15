@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
 import tensorflow as tf
-
 from tensorflow.python.eager.function import ConcreteFunction
 from tensorflow.python.training.tracking.tracking import AutoTrackable
 
@@ -20,7 +19,8 @@ class SavedModel:
 
         # Load saved model & create a signature def.
         self.metagraph_def: AutoTrackable = tf.saved_model.load(model_dir)
-        self.signature_def: ConcreteFunction = self.metagraph_def.signatures[tags]
+        self.signature_def: ConcreteFunction = \
+            self.metagraph_def.signatures[tags]
 
         # Get (default) feeds & fetches.
         self.feeds, self.fetches = self.parse_feeds_fetches(feeds, fetches)
@@ -40,7 +40,9 @@ class SavedModel:
                 local path.
             feeds (Union[str, List[str]]): Feeds (or input) tensor names.
             fetches (Union[str, List[str]]): Fetches (or output) tensor names.
-            structured_outputs (bool): Preserve the structure of the output tensor?
+            structured_outputs (bool): Preserve the structure of the output
+                tensor?
+                Defaults to True.
             tags (str, optional): Tags marked by the estimator. Defaults to
                 'serving_default'.
 
@@ -62,18 +64,22 @@ class SavedModel:
         """Get default feeds & fetches from model's `signature_def`.
 
         Args:
-            feeds (Optional[Union[str, List[str]]], optional): Feed (or input)
-                tensor names. Defaults to None.
-            fetches (Optional[Union[str, List[str], Dict[str, str]]], optional):
-                Fetches (or output) tensor names. Defaults to None.
-            structured_outputs (bool, optional): Model's outputs are preserved
-                exactly how it was defined. Defaults to True.
+            feeds (Union[str, List[str]], optional): Feed (or input)
+                tensor names.
+                Defaults to None.
+            fetches (Union[str, List[str], Dict[str, str]], optional):
+                Fetches (or output) tensor names.
+                Defaults to None.
+            structured_outputs (bool, optional): Model's outputs are
+                preserved exactly how it was defined.
+                Defaults to True.
 
         Raises:
             TypeError: Unknown output type.
 
         Returns:
-            Tuple[Union[str, List[str]], Union[str, List[str, Dict[str, str]]]]:
+            Tuple[Union[str, List[str]],
+                  Union[str, List[str, Dict[str, str]]]]:
                 Values for feeds (input) & fetches (output) tensor names.
         """
         # Default feeds.

@@ -3,6 +3,9 @@ from app.api import app
 
 
 def test_doc_redirect():
+    """Redirect docs from `https://domain.com/docs`
+    to `https://domain.com/<prefix>/docs`
+    """
     client = TestClient(app)
     response = client.get('/')
 
@@ -12,6 +15,8 @@ def test_doc_redirect():
 
 
 def test_api():
+    """
+    """
     client = TestClient(app)
 
     feature_1 = "Feature 1 value"
@@ -31,12 +36,12 @@ def test_api():
 
     response = client.post('/predict', json=request_data)
     assert response.status_code == 200
-    
+
     first_record = response.json()['values'][0]
     assert first_record['record_id'] == '1'
-    assert first_record['errors'] == None
-    assert first_record['warnings'] == None
+    assert first_record['errors'] is None
+    assert first_record['warnings'] is None
 
     assert first_record['data']['model_name'] == 'Support Vector Machine'
     assert first_record['data']['confidence_score'] == 90.2
-    assert first_record['data']['has_heart_disease'] == True
+    assert first_record['data']['has_heart_disease'] is True

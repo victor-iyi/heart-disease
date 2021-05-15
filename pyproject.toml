@@ -4,3 +4,7 @@ requires = [
   "wheel",
 ]
 build-backend = "setuptools.buld_meta"
+
+[tool.pep8]
+max_line_length = 82
+ignore = ["E251", "E701"]
