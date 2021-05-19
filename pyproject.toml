@@ -5,6 +5,7 @@ requires = [
 ]
 build-backend = "setuptools.buld_meta"
 
+# More info at: https://pypi.org/project/autopep8/#id8
 [tool.pep8]
 max_line_length = 82
 ignore = ["E251", "E701"]

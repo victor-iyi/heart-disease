@@ -1,11 +1,12 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import tensorflow as tf
 from tensorflow.python.eager.function import ConcreteFunction
 from tensorflow.python.training.tracking.tracking import AutoTrackable
 
-
-Tensor = Union[tf.Tensor, List[str], Any]
+# Tensor type alias.
+import numpy as np
+Tensor = Union[tf.Tensor, np.ndarray]
 
 
 class SavedModel:
@@ -13,7 +14,7 @@ class SavedModel:
                  feeds: Optional[Union[str, List[str]]] = None,
                  fetches: Optional[Union[str, List[str]]] = None,
                  structured_outputs: bool = True,
-                 tags: str = 'serving_default'):
+                 tags: str = 'serving_default') -> None:
         self.model_dir, self.tags = model_dir, tags
         self.structured_outputs = structured_outputs
 
@@ -30,7 +31,7 @@ class SavedModel:
         # Prune model from feeds (inputs) to fetches (outputs).
         self.model = self.metagraph_def.prune(feeds, fetches)
 
-    def predict(self, inputs: Tensor):
+    def predict(self, inputs: Tensor) -> Dict[str, Tensor]:
         """Makes prediction from a saved moel (model_dir) given feeds & fetches
             tensor names.
 
@@ -60,7 +61,7 @@ class SavedModel:
         self,
         feeds: Optional[Union[str, List[str]]] = None,
         fetches: Optional[Union[str, List[str], Dict[str, str]]] = None,
-    ):
+    ) -> Tuple[Union[List[str], str], Union[List[str], Dict[str, str], str]]:
         """Get default feeds & fetches from model's `signature_def`.
 
         Args:
