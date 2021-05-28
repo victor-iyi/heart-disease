@@ -9,7 +9,6 @@ pytest-cov
 srsly
 
 # Model Developement
-tensorflow
 numpy
 pandas
 sklearn
