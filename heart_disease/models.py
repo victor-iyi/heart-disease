@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict
 
 import sklearn.svm as svm
@@ -13,6 +14,7 @@ __all__ = [
         'KNearestNeighbors',
         'NaiveBayes',
         'DecisionTree',
+        'Models',
         'MODELS',
 ]
 
@@ -56,6 +58,14 @@ class DecisionTree(base.Model):
         super(DecisionTree, self).__init__()
 
         self._model = tree.DecisionTreeClassifier(**kwargs)
+
+
+class Models(Enum):
+    """Classifier enumeration mapping."""
+    SVM = SupportVectorMachine
+    KNN = KNearestNeighbors
+    NB = NaiveBayes
+    DT = DecisionTree
 
 
 MODELS: Dict[str, base.Model] = {

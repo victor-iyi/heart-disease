@@ -2,14 +2,32 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
+class AvailableModels(BaseModel):
+    models: List[str]
+
+
 class RecordDataRequest(BaseModel):
-    feature_1: str
-    feature_2: str
-    feature_3: str
+    age: int
+    sex: int        # 0 or 1
+    cp: int         # 0, 1, 2 or 3
+    trestbps: int
+    chol: int
+    fbs: int        # 0 or 1
+    restecg: int    # 0 or 1
+    thalach: int
+    exang: int      # 0 or 1
+    oldpeak: float
+    slope: int      # 0, 1 or 2
+    ca: int         # 0 1 or 2
+    thal: int       # 0, 1, 2 or 3
 
 
 class RecordRequest(BaseModel):
+    """Record identifier number."""
     record_id: str
+    """Name of model to be used for prediction."""
+    model_name: str
+    """Mapping of feature column names and values."""
     data: RecordDataRequest
 
 
@@ -25,7 +43,7 @@ class RecordDataResponse(BaseModel):
     confidence_score: float
 
     """Whether a patient has heart disease or not. 0 for no heart disease.
-    Any positive integer represents presence of heart disease."""
+    Any positive integer (usually 1) represents presence of heart disease."""
     has_heart_disease: bool
 
 

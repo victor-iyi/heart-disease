@@ -1,11 +1,21 @@
 {
     "values": [
         {
-            "recordId": "1",
+            "record_id": "1",
             "data": {
-              "feature_1": "Feature 1 value",
-              "feature_2": "Feature 2 value",
-              "feature_3": "Feature 3 value"
+              "age": 58,
+              "sex": 1,
+              "cp": 2,
+              "trestbps": 125,
+              "chol": 273,
+              "fbs": 0,
+              "restecg": 1,
+              "thalach": 162,
+              "exang": 0,
+              "oldpeak": 2.8,
+              "slope": 2,
+              "ca": 2,
+              "thal": 3
             }
         }
     ]

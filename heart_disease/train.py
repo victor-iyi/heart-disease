@@ -12,3 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# from heart_disease.models import SupportVectorMachine
+# from heart_diesase.models import DecisionTree
+# from heart_diesase.models import NaiveBayes
+# from heart_disease.models import KNearestNeighbors

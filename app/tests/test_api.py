@@ -15,21 +15,27 @@ def test_doc_redirect():
 
 
 def test_api():
-    """
-    """
+    """Test out a simple API request for prediction."""
     client = TestClient(app)
-
-    feature_1 = "Feature 1 value"
-    feature_2 = "Feature 2 value"
-    feature_3 = "Feature 3 value"
 
     request_data = {
         "values": [{
             "record_id": "1",
+            "model_name": "Support Vector Machine",
             "data": {
-                "feature_1": feature_1,
-                "feature_2": feature_2,
-                "feature_3": feature_3,
+                "age": 63,
+                "sex": 0,
+                "cp": 3,
+                "trestbps": 155,
+                "chol": 190,
+                "fbs": 0,
+                "restecg": 0,
+                "thalach": 123,
+                "exang": 1,
+                "oldpeak": 1.7,
+                "slope": 1,
+                "ca": 2,
+                "thal": 0,
             }
         }]
     }

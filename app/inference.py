@@ -1,117 +1,42 @@
-from typing import Dict, List, Optional, Tuple, Union
+from typing import ForwardRef, Iterable, List
+from typing import Mapping, TypeVar, Union
 
-import tensorflow as tf
-from tensorflow.python.eager.function import ConcreteFunction
-from tensorflow.python.training.tracking.tracking import AutoTrackable
-
-# Tensor type alias.
 import numpy as np
-Tensor = Union[tf.Tensor, np.ndarray]
+
+from heart_disease.models import MODELS
+
+_T = TypeVar('_T', int, float)
+_Array = Union[np.ndarray, List[_T]]
+_NestedArray = Union[
+        _Array,
+        Iterable[ForwardRef('_NestedArray')],
+        Mapping[str, ForwardRef('_NestedArray')],
+]
 
 
 class SavedModel:
-    def __init__(self, model_dir: str,
-                 feeds: Optional[Union[str, List[str]]] = None,
-                 fetches: Optional[Union[str, List[str]]] = None,
-                 structured_outputs: bool = True,
-                 tags: str = 'serving_default') -> None:
-        self.model_dir, self.tags = model_dir, tags
-        self.structured_outputs = structured_outputs
+    """Loads saved models and makes prediction."""
 
-        # Load saved model & create a signature def.
-        self.metagraph_def: AutoTrackable = tf.saved_model.load(model_dir)
-        self.signature_def: ConcreteFunction = \
-            self.metagraph_def.signatures[tags]
+    def __init__(self, model_dir: str) -> None:
+        self.model_dir = model_dir
+        self._model = None
 
-        # Get (default) feeds & fetches.
-        self.feeds, self.fetches = self.parse_feeds_fetches(feeds, fetches)
-
-        print(f'Feeds: {feeds}\nFetches: {fetches}')
-
-        # Prune model from feeds (inputs) to fetches (outputs).
-        self.model = self.metagraph_def.prune(feeds, fetches)
-
-    def predict(self, inputs: Tensor) -> Dict[str, Tensor]:
-        """Makes prediction from a saved moel (model_dir) given feeds & fetches
-            tensor names.
+    def predict(self, inputs: _Array) -> _NestedArray:
+        """Makes prediction from a saved moel (model_dir) given
+            unknown features.
 
         Args:
-            inputs (List[str]): Inputs to the model
-            model_dir (str): Path to the model/job directory. Could be a GCS or
-                local path.
-            feeds (Union[str, List[str]]): Feeds (or input) tensor names.
-            fetches (Union[str, List[str]]): Fetches (or output) tensor names.
-            structured_outputs (bool): Preserve the structure of the output
-                tensor?
-                Defaults to True.
-            tags (str, optional): Tags marked by the estimator. Defaults to
-                'serving_default'.
+            inputs (_Array): Array-like of shape (n_samples, n_features).
+                Unknown features to be predicted.
 
         Returns:
-            np.ndarray or tf.Tensor: Output of the saved model.
+            np.ndarray: Output of the saved model.
         """
-        # inputs = tf.constant(inputs)
-        # inputs = tf.identity(inputs)
-
-        results = self.model(inputs)
+        results = self._model(inputs)
 
         return results
 
-    def parse_feeds_fetches(
-        self,
-        feeds: Optional[Union[str, List[str]]] = None,
-        fetches: Optional[Union[str, List[str], Dict[str, str]]] = None,
-    ) -> Tuple[Union[List[str], str], Union[List[str], Dict[str, str], str]]:
-        """Get default feeds & fetches from model's `signature_def`.
+    def list_available_models(self) -> List[str]:
+        models = MODELS.keys()
+        return list(models)
 
-        Args:
-            feeds (Union[str, List[str]], optional): Feed (or input)
-                tensor names.
-                Defaults to None.
-            fetches (Union[str, List[str], Dict[str, str]], optional):
-                Fetches (or output) tensor names.
-                Defaults to None.
-            structured_outputs (bool, optional): Model's outputs are
-                preserved exactly how it was defined.
-                Defaults to True.
-
-        Raises:
-            TypeError: Unknown output type.
-
-        Returns:
-            Tuple[Union[str, List[str]],
-                  Union[str, List[str, Dict[str, str]]]]:
-                Values for feeds (input) & fetches (output) tensor names.
-        """
-        # Default feeds.
-        # feeds = feeds or signature_def.inputs[0].name
-        inputs, feeds = self.signature_def.inputs, []
-        print(f'Inputs: {inputs}')
-        for t in inputs:
-            if 'global_step:0' in t.name:
-                break
-            feeds.append(t.name)
-
-        # Default fetches.
-        default_fetches: Union[str, List[str], Dict[str, str]] = None
-        if self.structured_outputs:
-            # Preserve output structure.
-            outputs = self.signature_def.structured_outputs
-
-            if isinstance(outputs, (list, tuple)):
-                default_fetches: List[str] = [t.name for t in outputs]
-            elif isinstance(outputs, dict):
-                default_fetches: Dict[str, str] = {
-                    k: v.name for k, v in outputs.items()
-                }
-            elif isinstance(outputs, tf.Tensor):
-                default_fetches: str = outputs.name
-            else:
-                raise TypeError(f'Unknown output type: {outputs}')
-        else:
-            # List of outputs.
-            default_fetches = [t.name for t in self.signature_def.outputs]
-
-        fetches = fetches or default_fetches
-
-        return feeds, fetches

@@ -4,4 +4,4 @@ MODEL_DIR=res/trained_model/
 
 
 # Start the local API server...
-uvicorn api:app --reload
+uvicorn main:app --reload
