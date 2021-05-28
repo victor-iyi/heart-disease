@@ -13,9 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
+
 # Heart Disease API
 
-Heart Disease API exposes different API endpoints in order to effectively predict whether a patient has heart disease or not with different Machine learning algorithms.
+Heart Disease API exposes different API endpoints in order to effectively predict
+whether a patient has heart disease or not with different Machine learning algorithms.
 
 ## Contribution
 

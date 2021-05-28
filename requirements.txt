@@ -10,5 +10,9 @@ srsly
 
 # Model Developement
 tensorflow
+numpy
+pandas
+sklearn
+matplotlib
 colorlog
 pyyaml>=5.3
