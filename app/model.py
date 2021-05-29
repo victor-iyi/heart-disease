@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AvailableModels(BaseModel):
@@ -23,6 +23,7 @@ class RecordDataRequest(BaseModel):
 
 
 class RecordRequest(BaseModel):
+
     """Record identifier number."""
     record_id: str
     """Name of model to be used for prediction."""
@@ -36,6 +37,7 @@ class RecordsRequest(BaseModel):
 
 
 class RecordDataResponse(BaseModel):
+
     """Name of Machine Learning model responsible for prediction result."""
     model_name: str
 
@@ -60,3 +62,8 @@ class RecordResponse(BaseModel):
 
 class RecordsResponse(BaseModel):
     values: List[RecordResponse]
+
+
+class Metadata(BaseModel):
+    version: str
+    name: str

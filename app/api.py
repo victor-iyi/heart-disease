@@ -1,23 +1,23 @@
 import os
-
 from typing import List, Union
 
 import srsly
 
-from dotenv import load_dotenv, find_dotenv
-from fastapi import FastAPI, Body
+from dotenv import find_dotenv, load_dotenv
+from fastapi import Body, FastAPI
 from starlette.responses import RedirectResponse
 
 from app.inference import SavedModel
-from app.model import AvailableModels, RecordRequest
-from app.model import RecordsRequest, RecordsResponse
+from app.model import AvailableModels, Metadata
+from app.model import RecordsRequest, RecordRequest
+from app.model import RecordResponse, RecordsResponse
 
 
 load_dotenv(find_dotenv())
-PREFIX = os.getenv('CLUSTER_ROUTE_PREFIX', '').rstrip('/')
+PREFIX: str = os.getenv('CLUSTER_ROUTE_PREFIX', '').rstrip('/')
 
 # Path to `saved_model.pb`
-MODEL_DIR = os.getenv('MODEL_DIR', 'res/trained_model/')
+MODEL_DIR: str = os.getenv('MODEL_DIR', 'res/trained_model/')
 
 # App object.
 app = FastAPI(
@@ -43,31 +43,19 @@ def docs_redirect():
          summary='Return available models',
          tags=['available-models'])
 def models():
-    """Returns the list of models that are supported by API.
+    """Returns the list of models that are supported by API."""
 
-    Response:
-        ```json
-        {
-            "models": [
-                "Support Vector Machine",
-                "Naive Bayes",
-                "Decision Tree",
-                "K-Nearest Neighbors"
-            ]
-        }
-        ```
-    """
     return model.list_available_models()
 
 
 @app.post('/predict',
-          response_model=RecordRequest,
+          response_model=RecordResponse,
           response_model_exclude=False,
           response_description='Presence of heart disease or not',
           summary='Make prediction',
           tags=["prediction"])
 def predict(
-        body: RecordsRequest = Body(..., example=example_request)
+        body: RecordRequest = Body(..., example=example_request)
 ):
     """Make a prediction given a model name and list of features.
 
@@ -78,20 +66,6 @@ def predict(
     - **data**: List of features are:
         age, sex, cp, trestbps, chol, fbs, restecg,
         thalach, exang, oldpeak, slope, ca, thal
-
-    Example:
-        ```json
-        {
-            "record_id": ...,
-            "model_name": ...,
-            "data": [
-                age: ...,
-                sex: ...,
-                ...,
-                thal: ...
-            ]
-        }
-        ```
     """
     res = []
     features: List[Union[int, float]] = []
@@ -103,7 +77,7 @@ def predict(
 
 
 @app.post('/batch-predict',
-          response_model=RecordsRequest,
+          response_model=RecordsResponse,
           response_model_exclude=False,
           response_description='Presence of heart disease or not',
           summary='Make batch prediction',
@@ -125,37 +99,15 @@ def batch_predict(
     - **data**: List of features are:
         age, sex, cp, trestbps, chol, fbs, restecg,
         thalach, exang, oldpeak, slope, ca, thal
-
-    Example:
-        ```json
-        [
-            {
-                "record_id": ...,
-                "model_name": ...,
-                "data": [
-                    "age": ...
-                    "sex": ...,
-                    ...,
-                    "thal": ...
-                ]
-            },
-            {
-                "record_id": ...,
-                "model_name": ...,
-                "data': [
-                    ...
-                ]
-            }
-        ]
-        ```
     """
-    res = []
-    return res
+
+    return []
 
 
-@app.get('/metadata')
+@app.get('/metadata', response_model=Metadata)
 def metadata():
     """Returns important metadata about current API."""
+
     return {
         'version': '1.0.0',
         'name': 'heart_disease',

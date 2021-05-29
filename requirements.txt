@@ -12,6 +12,6 @@ srsly
 numpy
 pandas
 sklearn
-matplotlib
+joblib
 colorlog
 pyyaml>=5.3

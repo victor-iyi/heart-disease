@@ -21,6 +21,9 @@ class SavedModel:
         self.model_dir = model_dir
         self._model = None
 
+    def load_model(self) -> None:
+        pass
+
     def predict(self, inputs: _Array) -> _NestedArray:
         """Makes prediction from a saved moel (model_dir) given
             unknown features.
@@ -39,4 +42,3 @@ class SavedModel:
     def list_available_models(self) -> List[str]:
         models = MODELS.keys()
         return list(models)
-
