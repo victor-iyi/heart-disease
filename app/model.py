@@ -60,3 +60,8 @@ class RecordResponse(BaseModel):
 
 class RecordsResponse(BaseModel):
     values: List[RecordResponse]
+
+
+class Metadata(BaseModel):
+    version: str
+    name: str
