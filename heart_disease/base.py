@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 
 from abc import ABCMeta
-from typing import Any, ForwardRef, Iterable, Literal
+from typing import Any, Dict, ForwardRef, Iterable, Literal
 from typing import Mapping, Optional, TypeVar, Union
 
 import joblib
@@ -55,9 +55,16 @@ class Model(metaclass=ABCMeta):
     def __str__(self) -> str:
         return str(self._model)
 
-    def __call__(self, inputs: _Array) -> _Array:
+    def __call__(self, inputs: _Array) -> Dict[str, _Array]:
         """See ``self.predict(X)``."""
-        self.predict(inputs)
+
+        prediction = self.predict(inputs)
+        confidence = self.predict_probability(inputs)
+
+        return {
+            'prediction': prediction,
+            'confidence': confidence,
+        }
 
     def train(
             self, X: _Array, y: _Array,
@@ -240,6 +247,10 @@ class Model(metaclass=ABCMeta):
 
         self._model = joblib.load(path)
         Log.info(f'Model loaded from {path}')
+
+    save = save_model
+
+    load = load_model
 
     @property
     def model(self) -> object:

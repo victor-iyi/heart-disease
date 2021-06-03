@@ -69,7 +69,7 @@ class Data:
         return features, target
 
     def train_test_split(
-            self, X: _Features, y: _Target,
+            self,
             test_size: float = 0.2,
             random_state: Optional[int] = None,
             shuffle: bool = True,
@@ -77,8 +77,6 @@ class Data:
         """Split features and labels into random train and test subsets.
 
         Arguments:
-            X (Features): Input features.
-            y (Features): Labels/targets.
             test_size (float): A number between 0.0 and 1.0 that represents
               the proportion of the dataset to include in the test split.
               Defaults to 0.2 (2% of the data).
@@ -93,7 +91,7 @@ class Data:
             inputs.
         """
         X_train, X_test, y_train, y_test = train_test_split(
-           X, y, test_size=test_size,
+           self.features, self.target, test_size=test_size,
            random_state=random_state, shuffle=True
         )
 

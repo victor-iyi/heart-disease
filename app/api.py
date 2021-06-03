@@ -42,7 +42,7 @@ def docs_redirect():
          response_description='List of available models',
          summary='Return available models',
          tags=['available-models'])
-def models():
+def models() -> AvailableModels:
     """Returns the list of models that are supported by API."""
 
     return model.list_available_models()
@@ -56,7 +56,7 @@ def models():
           tags=["prediction"])
 def predict(
         body: RecordRequest = Body(..., example=example_request)
-):
+   ) -> RecordResponse:
     """Make a prediction given a model name and list of features.
 
     - **record_id**: Unique identifier for each set of records to be
@@ -84,7 +84,7 @@ def predict(
           tags=['batch', 'prediction'])
 def batch_predict(
         body: RecordsRequest = Body(..., example=example_request)
-):
+   ) -> RecordsResponse:
     """Perform a batch prediction over mutliple patients with a given
         model name and features for each patients.
 
@@ -105,7 +105,7 @@ def batch_predict(
 
 
 @app.get('/metadata', response_model=Metadata)
-def metadata():
+def metadata() -> Metadata:
     """Returns important metadata about current API."""
 
     return {

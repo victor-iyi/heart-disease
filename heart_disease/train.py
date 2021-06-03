@@ -12,7 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# from heart_disease.models import SupportVectorMachine
-# from heart_diesase.models import DecisionTree
-# from heart_diesase.models import NaiveBayes
-# from heart_disease.models import KNearestNeighbors
+from heart_diesase.data import Data
+from heart_disease.models import MODELS
+
+
+def train_all(filename: str, test_size: float = 0.2) -> None:
+    data = Data(filename)
+
+    (X_train, y_train), _ = data.train_test_split(test_size=0.2)
+
+    for name, Model in MODELS.items():
+        model = Model()
+        model.fit(X_train, y_train)
+        model.save_model(f'data/{name}.joblib')
+
+
+def train_model(model_name: str, filename: str,
+                test_size: float = 0.2) -> None:
+    data = Data(filename)
+    (X_train, y_train), _ = data.train_test_split(test_size=0.2)
+
+    Model = MODELS[model_name]
+    model = Model()
+    model.fit(X_train, y_train)
+    model.save_model(f'data/{model_name}.joblib')

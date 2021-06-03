@@ -1,38 +1,44 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel  # , Field
 
 
 class AvailableModels(BaseModel):
     models: List[str]
 
 
-class RecordDataRequest(BaseModel):
+class Features(BaseModel):
     age: int
-    sex: int        # 0 or 1
-    cp: int         # 0, 1, 2 or 3
+    sex: int        # Literal[0, 1]  - 0 or 1
+    cp: int         # Literal[0, 1, 2, 3]  - 0, 1, 2 or 3
     trestbps: int
     chol: int
-    fbs: int        # 0 or 1
-    restecg: int    # 0 or 1
+    fbs: int        # Literal[0, 1]  - 0 or 1
+    restecg: int    # Literal[0, 1]  - 0 or 1
     thalach: int
-    exang: int      # 0 or 1
+    exang: int      # Literal[0, 1]  - 0 or 1
     oldpeak: float
-    slope: int      # 0, 1 or 2
-    ca: int         # 0 1 or 2
-    thal: int       # 0, 1, 2 or 3
+    slope: int      # Literal[0, 1, 2]  - 0, 1 or 2
+    ca: int         # Literal[0, 1, 2]  - 0 1 or 2
+    thal: int       # Literal[0, 1, 2, 3]  - 0, 1, 2 or 3
 
 
 class RecordRequest(BaseModel):
+    """Request model for a single record."""
 
     """Record identifier number."""
     record_id: str
+
     """Name of model to be used for prediction."""
     model_name: str
+
     """Mapping of feature column names and values."""
-    data: RecordDataRequest
+    data: Features
 
 
 class RecordsRequest(BaseModel):
+    """Request for multiple models for batch prediction."""
+
+    """List of multiple requests."""
     values: List[RecordRequest]
 
 
