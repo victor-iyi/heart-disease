@@ -1,4 +1,3 @@
-
 import sys
 import logging
 
@@ -26,7 +25,7 @@ class Log(metaclass=ABCMeta):
     _logger: logging.Logger = logging.getLogger(f_config['name'])
 
     # Log Levels.
-    Level = IntEnum('Level', names={
+    Level: IntEnum = IntEnum('Level', names={
         'CRITICAL': 50,
         'ERROR': 40,
         'WARNING': 30,
@@ -39,53 +38,54 @@ class Log(metaclass=ABCMeta):
     level: int = _logger.level
 
     @staticmethod
-    def setLevel(level: int):
+    def setLevel(level: int) -> None:
         Log._logger.setLevel(level=level)
 
     @staticmethod
-    def getLogger():
+    def getLogger() -> logging.Logger:
         return Log._logger
 
     @staticmethod
-    def setLogger(logger_dict: Dict[str, str]):
+    def setLogger(logger_dict: Dict[str, str]) -> None:
         if 'name' in logger_dict.keys() and 'path' in logger_dict.keys():
-            raise KeyError(('`logger_dict` does not have'
-                            'both `name` & `path` keys.'))
+            raise KeyError(
+                '`logger_dict` does not have both `name` & `path` keys.'
+            )
 
         fileConfig(logger_dict['path'], disable_existing_loggers=True)
         Log._logger = logging.getLogger(logger_dict['name'])
 
     @staticmethod
-    def debug(*args: Any, **kwargs: Any):
+    def debug(*args: Any, **kwargs: Any) -> None:
         Log._logger.debug(*args, **kwargs)
 
     @staticmethod
-    def info(*args: Any, **kwargs: Any):
+    def info(*args: Any, **kwargs: Any) -> None:
         Log._logger.info(*args, **kwargs)
 
     @staticmethod
-    def warn(*args: Any, **kwargs: Any):
+    def warn(*args: Any, **kwargs: Any) -> None:
         Log._logger.warning(*args, **kwargs)
 
     @staticmethod
-    def error(*args: Any, **kwargs: Any):
+    def error(*args: Any, **kwargs: Any) -> None:
         Log._logger.error(*args, **kwargs)
 
     @staticmethod
-    def critical(*args: Any, **kwargs: Any):
+    def critical(*args: Any, **kwargs: Any) -> None:
         Log._logger.critical(*args, **kwargs)
 
     @staticmethod
-    def exception(*args: Any, **kwargs: Any):
+    def exception(*args: Any, **kwargs: Any) -> None:
         Log._logger.exception(*args, **kwargs)
 
     @staticmethod
-    def fatal(*args: Any, code: int = -1, **kwargs: Any):
+    def fatal(*args: Any, code: int = -1, **kwargs: Any) -> None:
         Log._logger.fatal(*args, **kwargs)
         exit(code)
 
     @staticmethod
-    def log(*args: Any, **kwargs: Any):
+    def log(*args: Any, **kwargs: Any) -> None:
         """Logging method avatar based on verbosity.
 
         Args:
@@ -106,7 +106,7 @@ class Log(metaclass=ABCMeta):
 
     @staticmethod
     def pretty(args: Any, stream: Optional[TextIO] = None, indent: int = 1,
-               width: int = 80, depth: int = 0, *, compact: bool = False):
+               width: int = 80, depth: int = 0, *, compact: bool = False) -> None:
         """Handle pretty printing operations onto a stream using a set of
             configured parameters.
 
@@ -134,7 +134,7 @@ class Log(metaclass=ABCMeta):
         printer.pprint(args)
 
     @staticmethod
-    def progress(count: int, max_count: int):
+    def progress(count: int, max_count: int) -> None:
         """Prints task progress *(in %)*.
 
         Args:
@@ -143,11 +143,11 @@ class Log(metaclass=ABCMeta):
         """
 
         # Percentage completion.
-        pct_complete = count / max_count
+        pct_complete: float = count / max_count
 
         # Status-message. Note the \r which means the line should
         # overwrite itself.
-        msg = f'\r- Progress: {pct_complete:.02%}'
+        msg: str = f'\r- Progress: {pct_complete:.02%}'
 
         # Print it.
         sys.stdout.write(msg)

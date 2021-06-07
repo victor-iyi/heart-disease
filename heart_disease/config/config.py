@@ -5,7 +5,8 @@ import pickle
 import configparser
 
 from abc import ABCMeta
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, ForwardRef, NoReturn
+from typing import Optional, Sequence, TypeVar, Union
 
 # Third party libraries.
 import yaml
@@ -20,6 +21,13 @@ except ImportError:
 # Exported classes & functions.
 __all__ = [
     'Config',
+]
+
+AttrKey = TypeVar('AttrKey', str)
+AttrValue = Union[
+    Dict[AttrKey, ForwardRef('AttrValue')],
+    Sequence[ForwardRef('AttrValue')],
+    int, float, str, bool
 ]
 
 
@@ -118,7 +126,10 @@ class Attr(dict):
         ```
     """
 
-    def __init__(self, d: Optional[Dict[str, Any]] = None, **kwargs: Any):
+    def __init__(
+        self,
+        d: Optional[Dict[AttrKey, AttrValue]] = None,
+        **kwargs: Any) -> None:
         if d is None:
             d = {}
         if kwargs:
@@ -130,7 +141,7 @@ class Attr(dict):
             if not (k.startswith('__') and k.endswith('__')):
                 setattr(self, k, getattr(self, k))
 
-    def __setattr__(self, name: str, value: Any):
+    def __setattr__(self, name: AttrKey, value: AttrValue) -> None:
         if isinstance(value, (list, tuple)):
             value = [self.__class__(x)
                      if isinstance(x, dict) else x for x in value]
@@ -149,7 +160,7 @@ class Attr(dict):
 #############################################################################
 class Config(metaclass=ABCMeta):
     @staticmethod
-    def from_yaml(file: str):
+    def from_yaml(file: str) -> Attr:
         """Load configuration from a YAML file.
 
         Args:
@@ -175,7 +186,7 @@ class Config(metaclass=ABCMeta):
         return cfg
 
     @staticmethod
-    def from_cfg(file: str, ext: str = 'cfg'):
+    def from_cfg(file: str, ext: str = 'cfg') -> Attr:
         """Load configuration from an cfg file.
 
         Args:
@@ -201,7 +212,7 @@ class Config(metaclass=ABCMeta):
         return cfg
 
     @staticmethod
-    def from_json(file: str):
+    def from_json(file: str) -> Attr:
         """Load configuration from a json file.
 
         Args:
@@ -227,7 +238,7 @@ class Config(metaclass=ABCMeta):
         return cfg
 
     @staticmethod
-    def to_yaml(cfg: Attr, file: str, **kwargs: Any):
+    def to_yaml(cfg: Attr, file: str, **kwargs: Any) -> None:
         """Save configuration object into a YAML file.
 
         Args:
@@ -247,7 +258,7 @@ class Config(metaclass=ABCMeta):
         Config._to_file(cfg=cfg, file=file, dumper=yaml.dump, **kwargs)
 
     @staticmethod
-    def to_json(cfg: Attr, file: str, **kwargs: Any):
+    def to_json(cfg: Attr, file: str, **kwargs: Any) -> None:
         """Save configuration object into a JSON file.
 
         Args:
@@ -265,7 +276,7 @@ class Config(metaclass=ABCMeta):
         Config._to_file(cfg=cfg, file=file, dumper=json.dump, **kwargs)
 
     @staticmethod
-    def to_cfg(cfg: Attr, file: str, **kwargs: Any):
+    def to_cfg(cfg: Attr, file: str, **kwargs: Any) -> NoReturn:
         """Save configuration object into a cfg or ini file.
 
         Args:
@@ -279,11 +290,11 @@ class Config(metaclass=ABCMeta):
         return NotImplemented
 
     @staticmethod
-    def to_pickle(cfg: Any, file: str, **kwargs: Any):
+    def to_pickle(cfg: Attr, file: str, **kwargs: Any) -> None:
         """Save configuration object into a pickle file.
 
         Args:
-            cfg (Any): Configuration: as dictionary instance.
+            cfg (Attr): Configuration: as dictionary instance.
             file (str): Path to write the configuration to.
 
         Keyword Args:
@@ -296,15 +307,15 @@ class Config(metaclass=ABCMeta):
 
     @staticmethod
     def _to_file(
-            cfg: Any,
-            file: str,
-            dumper: Callable[..., None],
-            **kwargs: Any
-    ):
+        cfg: Attr,
+        file: str,
+        dumper: Callable[..., None],
+        **kwargs: Any
+    ) -> None:
         """Save configuration object into a file as allowed by `dumper`.
 
         Args:
-            cfg (Any): Configuration: as dictionary instance.
+            cfg (Attr): Configuration: as dictionary instance.
             file (str): Path to write the configuration to.
             dumper (Callable[[Config, TextIO, ...], None]): Function/callable
                 handler to save object to disk.

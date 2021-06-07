@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple
 
 import numpy as np
 try:
@@ -12,6 +12,11 @@ except ImportError:
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
+
+
+__all__ = [
+    'Data',
+]
 
 if np_typing:
     # Features (n_samples, n_features).
@@ -47,7 +52,7 @@ class Data:
     def __len__(self) -> int:
         return len(self._df)
 
-    def __iter__(self) -> 'Data':
+    def __iter__(self) -> Iterable[Tuple[_Features, _Target]]:
         return self
 
     def __next__(self) -> Tuple[_Features, _Target]:
@@ -92,7 +97,7 @@ class Data:
         """
         X_train, X_test, y_train, y_test = train_test_split(
            self.features, self.target, test_size=test_size,
-           random_state=random_state, shuffle=True
+           random_state=random_state, shuffle=shuffle
         )
 
         # Train data                Test data

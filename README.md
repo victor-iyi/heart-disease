@@ -19,6 +19,19 @@
 Heart Disease API exposes different API endpoints in order to effectively predict
 whether a patient has heart disease or not with different Machine learning algorithms.
 
+- [`heart_disease`]: This module contains the `data` and `models` API.
+
+- [`app`]: This moddule is use for the Web application & Rest API.
+
+- [`bin`]: Contains bash scripts to install, run, train and deploy different parts of the entire application.
+
+- [`data`]: Contains the dataset and trained models
+
+[`app`]: ./app/
+[`bin`]: ./bin/
+[`data`]: ./data/
+[`heart_disease`]: ./heart_disease/
+
 ## Contribution
 
 You are very welcome to modify and use them in your own projects.

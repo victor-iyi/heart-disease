@@ -16,7 +16,7 @@
 
 ## Properties
 
-- models: object
+- model: object
 """
 from __future__ import annotations
 

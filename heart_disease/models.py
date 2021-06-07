@@ -10,12 +10,12 @@ from heart_disease import base
 
 
 __all__ = [
-        'SupportVectorMachine',
-        'KNearestNeighbors',
-        'NaiveBayes',
-        'DecisionTree',
-        'Models',
-        'MODELS',
+    'SupportVectorMachine',
+    'KNearestNeighbors',
+    'NaiveBayes',
+    'DecisionTree',
+    'Models',
+    'MODELS',
 ]
 
 
@@ -36,9 +36,9 @@ class KNearestNeighbors(base.Model):
         self.k = k
 
         self._model = neighbors.KNeighborsClassifier(
-                n_neighbors=self.k,
-                n_jobs=-1,
-                **kwargs
+            n_neighbors=self.k,
+            n_jobs=-1,
+            **kwargs
         )
 
 

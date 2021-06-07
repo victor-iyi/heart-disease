@@ -12,11 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from heart_diesase.data import Data
+from heart_disease.data import Data
 from heart_disease.models import MODELS
 
 
 def train_all(filename: str, test_size: float = 0.2) -> None:
+    """Train models defined in `models.MODELS`.
+
+    Args:
+        filename (str): Filename of CSV data to train models on.
+        test_size (float, optional): Test split size. Defaults to 0.2.
+    """
     data = Data(filename)
 
     (X_train, y_train), _ = data.train_test_split(test_size=0.2)
@@ -29,8 +35,15 @@ def train_all(filename: str, test_size: float = 0.2) -> None:
 
 def train_model(model_name: str, filename: str,
                 test_size: float = 0.2) -> None:
+    """Train a single model given it's model_name in `models.MODELS`.
+
+    Args:
+        model_name (str): Name of the model. Avaiable models are found in `models.MODELS`.
+        filename (str): Filename of CSV data to train model on.
+        test_size (float, optional): Test split size. Defaults to 0.2.
+    """
     data = Data(filename)
-    (X_train, y_train), _ = data.train_test_split(test_size=0.2)
+    (X_train, y_train), _ = data.train_test_split(test_size=test_size)
 
     Model = MODELS[model_name]
     model = Model()
