@@ -12,8 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import concurrent.futures
+
+from typing import TypeVar
+from functools import partial
+
 from heart_disease.data import Data
 from heart_disease.models import MODELS
+from heart_disease.config.consts import FS
+
+
+T = TypeVar('T')
 
 
 def train_all(filename: str, test_size: float = 0.2) -> None:
@@ -23,14 +33,16 @@ def train_all(filename: str, test_size: float = 0.2) -> None:
         filename (str): Filename of CSV data to train models on.
         test_size (float, optional): Test split size. Defaults to 0.2.
     """
+    # Load data & split into train/test set.
     data = Data(filename)
+    (X_train, y_train), _ = data.train_test_split(test_size=test_size)
 
-    (X_train, y_train), _ = data.train_test_split(test_size=0.2)
+    # Create a partial function where data is passed in.
+    func = partial(_train_and_save_model, X_train, y_train)
 
-    for name, Model in MODELS.items():
-        model = Model()
-        model.fit(X_train, y_train)
-        model.save_model(f'data/{name}.joblib')
+    # Train and save models concurrently.
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.map(func, MODELS.keys())
 
 
 def train_model(model_name: str, filename: str,
@@ -42,10 +54,31 @@ def train_model(model_name: str, filename: str,
         filename (str): Filename of CSV data to train model on.
         test_size (float, optional): Test split size. Defaults to 0.2.
     """
+    # Load data & split into train/test set.
     data = Data(filename)
     (X_train, y_train), _ = data.train_test_split(test_size=test_size)
 
-    Model = MODELS[model_name]
-    model = Model()
+    # Train and save model on another process.
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        executor.submit(_train_and_save_model, X_train, y_train, model_name)
+
+
+def _train_and_save_model(X_train: T, y_train: T, model_name: str) -> None:
+    """Train and save model process function.
+
+    Args:
+        X_train (T): Train features.
+        y_train (T): Train labels/target.
+        model_name (str): Name of the model.
+    """
+    # Load model via `model_name` & train it.
+    model = MODELS[model_name]()
     model.fit(X_train, y_train)
-    model.save_model(f'data/{model_name}.joblib')
+
+    # Save model.
+    path = os.path.join(FS.SAVED_MODELS, f'{model_name}.joblib')
+    model.save_model(path)
+
+
+if __name__ == '__main__':
+    train_all('data/heart.csv')

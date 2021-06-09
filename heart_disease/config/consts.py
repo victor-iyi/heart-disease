@@ -29,10 +29,8 @@ class FS(metaclass=ABCMeta):
     CONFIG_DIR: str = os.path.join(LIB_DIR, 'config')
 
     # Resources & data directories.
-    RESOURCE_DIR: str = os.path.join(PROJECT_DIR, 'res')
-    JOB_DIR: str = os.path.join(RESOURCE_DIR, 'trained_model')
-    MODELS_DIR: str = os.path.join(JOB_DIR, 'models')
-    CKPT_DIR: str = os.path.join(RESOURCE_DIR, 'ckpt')
+    DATA_DIR = os.path.join(PROJECT_DIR, 'data')
+    SAVED_MODELS: str = os.path.join(DATA_DIR, 'trained_model')
 
 
 ##############################################################################
