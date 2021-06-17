@@ -23,6 +23,7 @@ from heart_disease.models import MODELS
 from heart_disease.config.consts import FS
 
 
+# Generic `X` & `y` train data.
 T = TypeVar('T')
 
 
