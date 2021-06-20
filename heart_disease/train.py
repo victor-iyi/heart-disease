@@ -59,7 +59,7 @@ def train_model(model_name: str, filename: str,
     data = Data(filename)
     (X_train, y_train), _ = data.train_test_split(test_size=test_size)
 
-    # Train and save model on another process.
+    # Train and save model on multiple process.
     with concurrent.futures.ProcessPoolExecutor() as executor:
         executor.submit(_train_and_save_model, X_train, y_train, model_name)
 

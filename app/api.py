@@ -111,10 +111,12 @@ async def batch_predict(
 
 
 @app.get('/metadata', response_model=Metadata)
-async def metadata() -> Metadata:
+async def metadata() -> Dict[str, str]:
     """Returns important metadata about current API."""
 
     return {
-        'version': '1.0.0',
         'name': 'heart_disease',
+        'version': '1.0.0',
+        'author': 'Victor I. Afaolbi',
+        'license': 'MIT or Apache',
     }

@@ -30,7 +30,7 @@ def default_args() -> argparse.Namespace:
         help='Directory to save trained models.'
     )
     parser.add_argument(
-        '--filename', type=str, default='data/heart.csv',
+        '--filename', type=str, default=f'{FS.DATA_DIR}/heart.csv',
         help='Path to CSV file containing the data to be trained on.'
     )
 
@@ -55,12 +55,15 @@ def main() -> None:
     # Get the default arguments.
     args = default_args()
 
+    # Train all models at once or a single model.
     if args.select_model.lower() == 'all':
+        # Train all models.
         train.train_all(
             filename=args.filename,
             test_size=args.test_size
         )
     else:
+        # Select model to train.
         model_name = {
             'svm': 'Support Vector Machine',
             'nb': 'Naive Bayes',

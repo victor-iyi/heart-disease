@@ -23,7 +23,7 @@ __all__ = [
     'Config',
 ]
 
-AttrKey = TypeVar('AttrKey', str)
+AttrKey = TypeVar('AttrKey', str, bytes)
 AttrValue = Union[
     Dict[AttrKey, ForwardRef('AttrValue')],
     Sequence[ForwardRef('AttrValue')],

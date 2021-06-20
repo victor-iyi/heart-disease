@@ -71,5 +71,7 @@ class RecordsResponse(BaseModel):
 
 
 class Metadata(BaseModel):
-    version: str
     name: str
+    version: str
+    author: str
+    license: str
