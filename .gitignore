@@ -12,6 +12,7 @@ forge.yaml
 .forge
 
 *.py[cod]
+__pycache__
 
 # C extensions
 *.so
@@ -52,3 +53,6 @@ output/*/index.html
 # Sphinx
 docs/_build
 README.html
+
+# IPython notebook
+.ipynb_checkpoints
