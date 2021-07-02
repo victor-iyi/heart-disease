@@ -12,3 +12,7 @@ python heart_disease/train.py           \
       --filename ${FILENAME}            \
       --select-model ${SELECT_MODEL}    \
       --test-size ${TEST_SIZE}
+
+
+# Start Jupyter notebook for "Heart disease.ipynb"
+# jupyter noteobok

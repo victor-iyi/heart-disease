@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import argparse
 
-from heart_disease import train, models
+from heart_disease import train
 from heart_disease.config import FS
+
 
 def default_args() -> argparse.Namespace:
     # Argument parser initialization.
@@ -51,6 +53,7 @@ def default_args() -> argparse.Namespace:
 
     return args
 
+
 def main() -> None:
     # Get the default arguments.
     args = default_args()
@@ -66,8 +69,8 @@ def main() -> None:
         # Select model to train.
         model_name = {
             'svm': 'Support Vector Machine',
-            'nb': 'Naive Bayes',
-            'dt': 'Decision Trees',
+            'nb':  'Naive Bayes',
+            'dt':  'Decision Tree',
             'Knn': 'K-Nearest Neigbhors',
         }[args.select_model]
 
@@ -81,3 +84,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+

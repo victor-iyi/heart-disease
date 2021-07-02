@@ -1,5 +1,19 @@
+# Copyright 2021 Victor I. Afolabi
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import srsly
 
@@ -35,6 +49,7 @@ batch_example = srsly.read_json('app/data/batch_request_sample.json')
 # Loaded saved model object.
 model = SavedModel(model_dir=MODEL_DIR)
 
+
 @app.get('/', include_in_schema=False)
 async def docs_redirect():
     return RedirectResponse(f'{PREFIX}/docs')
@@ -58,8 +73,8 @@ async def models() -> List[str]:
           summary='Make prediction',
           tags=["prediction"])
 async def predict(
-        body: PredictionRequest= Body(..., example=single_example)
-   ) -> Dict[str, str]:
+        body: PredictionRequest = Body(..., example=single_example)
+) -> Dict[str, str]:
     """Make a prediction given a model name and list of features.
 
     - **record_id**: Unique identifier for each set of records to be
@@ -89,8 +104,8 @@ async def predict(
           summary='Make batch prediction',
           tags=['batch', 'prediction'])
 async def batch_predict(
-        body: BatchPredictionRequest= Body(..., example=batch_example)
-   ) -> List[Dict[str, str]]:
+        body: BatchPredictionRequest = Body(..., example=batch_example)
+) -> List[Dict[str, str]]:
     """Perform a batch prediction over mutliple patients with a given
         model name and features for each patients.
 

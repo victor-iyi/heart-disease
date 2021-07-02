@@ -1,3 +1,17 @@
+# Copyright 2021 Victor I. Afolabi
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Module defines abstract base classes for the different ML model classes.
 
 ## Methods
@@ -196,8 +210,10 @@ class Model(metaclass=ABCMeta):
         classification.
 
         Arguments:
-            X (_Array): array-like of shape (n_samples, n_features) - Test samples.
-            y (_Array): array-like of shape (n_samples,) or (n_samples, n_outputs)
+            X (_Array): array-like of shape (n_samples, n_features)
+                - Test samples.
+            y (_Array): array-like of shape (n_samples,) or
+                (n_samples, n_outputs)
                 - Ture lables for `X`.
             labels (_Array): array-like of shape (n_classes).
                 List of labels to index the matrix. This may be used to reorder
@@ -229,10 +245,12 @@ class Model(metaclass=ABCMeta):
                                 sample_weight=sample_weight,
                                 normalize=normalize)
 
-    def confusion_matrix(self, y_true: _Array, y_pred: _Array, *,
-                         labels: Optional[_Array] = None,
-                         sample_weight: Optional[_Array] = None,
-                         normalize: Optional[Literal['true', 'pred', 'all']] = None):
+    def confusion_matrix(
+            self, y_true: _Array, y_pred: _Array, *,
+            labels: Optional[_Array] = None,
+            sample_weight: Optional[_Array] = None,
+            normalize: Optional[Literal['true', 'pred', 'all']] = None
+    ) -> _Array:
         """Compute confusion matrix to evaluate the accuracy of a
         classification.
 

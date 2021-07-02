@@ -23,7 +23,8 @@ whether a patient has heart disease or not with different Machine learning algor
 
 - [`app`]: This moddule is use for the Web application & Rest API.
 
-- [`bin`]: Contains bash scripts to install, run, train and deploy different parts of the entire application.
+- [`bin`]: Contains bash scripts to install, run, train and deploy different
+  parts of the entire application.
 
 - [`data`]: Contains the dataset and trained models
 

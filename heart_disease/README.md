@@ -16,7 +16,9 @@
 
 # Machine Learning Model
 
-The `heart_disease` module provides both `data` and `models` to train different machine learning models with the `data.Data` API. The `models` API is also straight forward to use and intuitive.
+The `heart_disease` module provides both `data` and `models` to train different
+machine learning models with the `data.Data` API. The `models` API is also
+straight forward to use and intuitive.
 
 ## Models
 
@@ -27,9 +29,11 @@ Machine learning models built to diagnose heart diseases include:
 - Descision Trees (DT)
 - K-Nearest Neighbors (KNN)
 
-In `heart_disease/base.py` contains the base class for all models (`Model`) which contain the API in which all subclasses are called and implemented.
+In `heart_disease/base.py` contains the base class for all models (`Model`)
+which contain the API in which all subclasses are called and implemented.
 
-To create a new model, all you need to do is to create a new `sklearn` model. For example:
+To create a new model, all you need to do is to create a new `sklearn` model.
+For example:
 
 ```python
 import sklearn.ensemble as ensemble
@@ -44,14 +48,16 @@ class Ensemble(base.Model):
         self._model = ensemble.AdaBoostClassifier(**kwargs)
 ```
 
-For access to all models defined in `models.py` two data structures have been created:
+For access to all models defined in `models.py` two data structures have
+been created:
 
 - `Models` - `Enum`
 - `MODELS` - `Dict[str, base.Model]`
 
 ## Data
 
-The `Data` class provides a simple and elegant API for working with CSV data [heart.csv](../data/heart.csv) provided in the [`data/`](../data/) folder.
+The `Data` class provides a simple and elegant API for working with CSV data
+[heart.csv](../data/heart.csv) provided in the [`data/`](../data/) folder.
 
 The data contains the following features:
 
@@ -79,14 +85,16 @@ The data contains the following features:
     target: int     # 0 or 1
 ```
 
-Below is a sample use of the `Data` class to print out the feature and target names:
+Below is a sample use of the `Data` class to print out the feature and
+target names:
 
 ```python
 >>> from heart_disease.data import Data
 >>>
 >>> data = Data(filename='data/heart.csv')
 >>> data.feature_names
-['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang',
+ 'oldpeak', 'slope', 'ca', 'thal']
 >>> data.target_name
 'target'
 ```
