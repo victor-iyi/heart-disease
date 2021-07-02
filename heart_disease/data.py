@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, overload, Tuple, Union
 try:
     from typing import Literal
 except ImportError:
@@ -75,7 +75,26 @@ class Data:
         Returns:
             str: Returns corresponding class name given target.
         """
-        self.class_names[target]
+        return self.class_names[target]
+
+    @overload
+    def has_heart_disease(self, target: int) -> bool: ...
+    @overload
+    def has_heart_disease(self, target: float) -> bool: ...
+    @overload
+    def has_heart_disease(self, target: _Target) -> _Target: ...
+
+    def has_heart_disease(self, target: Union[int, float, _Target]) -> Union[bool, _Target]:
+        """Target lookup if a patient has heart disease or not.
+
+        Args:
+            target (float | int | np.ndarray): Single or multiple targets.
+
+        Returns:
+            bool | np.ndarray[bool]: Return single or multiple results
+            for the lookup.
+        """
+        return np.cast[bool](target)
 
     def train_test_split(
             self,
