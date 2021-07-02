@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from typing import Iterable, List, Optional, Tuple
+try:
+    from typing import Literal
+except ImportError:
+    # PEP 586
+    from typing_extensions import Literal
 
 import numpy as np
-try:
-    import numpy.typing as npt
-    np_typing = True
-except ImportError:
-    np_typing = False
-
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
@@ -18,16 +17,10 @@ __all__ = [
     'Data',
 ]
 
-if np_typing:
-    # Features (n_samples, n_features).
-    _Features = npt.NDArray[np.float32]  # npt.ArrayLike
-    # Target (n_samples,)
-    _Target = npt.NDArray[np.float32]  # npt.ArrayLike
-else:
-    # Features (n_samples, n_features).
-    _Features = np.ndarray
-    # Target (n_samples,)
-    _Target = np.ndarray
+# Features (n_samples, n_features).
+_Features = np.ndarray
+# Target (n_samples,)
+_Target = np.ndarray
 
 # Train & Test data type-hints.
 _TrainData = Tuple[_Features, _Target]
@@ -72,6 +65,17 @@ class Data:
         )
 
         return features, target
+
+    def get_class_name(self, target: Literal[0, 1]) -> str:
+        """Returns what numeric class names represents.
+
+        Args:
+            target (Literal[0, 1]): Either a 0 or 1.
+
+        Returns:
+            str: Returns corresponding class name given target.
+        """
+        self.class_names[target]
 
     def train_test_split(
             self,
@@ -144,3 +148,7 @@ class Data:
     def n_samples(self) -> int:
         """Number of data samples."""
         return len(self._df)
+
+    @property
+    def class_names(self) -> List[str]:
+        return ['No Heart disease', 'Has Heart disease']

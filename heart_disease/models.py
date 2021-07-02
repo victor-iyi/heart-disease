@@ -3,8 +3,8 @@ from typing import Any, Dict
 
 import sklearn.svm as svm
 import sklearn.naive_bayes as naive_bayes
-import sklearn.tree as tree
 import sklearn.neighbors as neighbors
+import sklearn.tree as tree
 
 from heart_disease import base
 

@@ -287,7 +287,7 @@ class Config(metaclass=ABCMeta):
             Passed into `dumper`.
         """
         print(cfg, file, kwargs)
-        return NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def to_pickle(cfg: Attr, file: str, **kwargs: Any) -> None:

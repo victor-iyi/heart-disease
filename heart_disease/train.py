@@ -19,12 +19,13 @@ from typing import TypeVar
 from functools import partial
 
 from heart_disease.data import Data
+from heart_disease.base import Model
 from heart_disease.models import MODELS
 from heart_disease.config.consts import FS
 
 
 # Generic `X` & `y` train data.
-T = TypeVar('T')
+_T = TypeVar('_T')
 
 
 def train_all(filename: str, test_size: float = 0.2) -> None:
@@ -51,7 +52,8 @@ def train_model(model_name: str, filename: str,
     """Train a single model given it's model_name in `models.MODELS`.
 
     Args:
-        model_name (str): Name of the model. Avaiable models are found in `models.MODELS`.
+        model_name (str): Name of the model. Avaiable models are found in
+            `models.MODELS`.
         filename (str): Filename of CSV data to train model on.
         test_size (float, optional): Test split size. Defaults to 0.2.
     """
@@ -64,7 +66,7 @@ def train_model(model_name: str, filename: str,
         executor.submit(_train_and_save_model, X_train, y_train, model_name)
 
 
-def _train_and_save_model(X_train: T, y_train: T, model_name: str) -> None:
+def _train_and_save_model(X_train: _T, y_train: _T, model_name: str) -> None:
     """Train and save model process function.
 
     Args:
@@ -73,8 +75,8 @@ def _train_and_save_model(X_train: T, y_train: T, model_name: str) -> None:
         model_name (str): Name of the model.
     """
     # Load model via `model_name` & train it.
-    model = MODELS[model_name]()
-    model.fit(X_train, y_train)
+    model: Model = MODELS[model_name]()
+    model.train(X_train, y_train)
 
     # Save model.
     path = os.path.join(FS.SAVED_MODELS, f'{model_name}.joblib')
@@ -83,3 +85,4 @@ def _train_and_save_model(X_train: T, y_train: T, model_name: str) -> None:
 
 if __name__ == '__main__':
     train_all('data/heart.csv')
+

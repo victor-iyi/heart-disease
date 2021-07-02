@@ -9,8 +9,8 @@ from starlette.responses import RedirectResponse
 
 from app.inference import SavedModel
 from app.model import AvailableModels, Metadata
-from app.model import RecordsRequest, RecordRequest
-from app.model import RecordResponse, RecordsResponse
+from app.model import BatchPredictionRequest, BatchResponse
+from app.model import PredictionRequest, PredictionResponse
 from heart_disease.config.consts import FS
 
 
@@ -28,7 +28,10 @@ app = FastAPI(
     openapi_prefix=PREFIX,
 )
 
-example_request = srsly.read_json('app/data/example_request.json')
+# Request example.
+single_example = srsly.read_json('app/data/single_request_sample.json')
+batch_example = srsly.read_json('app/data/batch_request_sample.json')
+
 # Loaded saved model object.
 model = SavedModel(model_dir=MODEL_DIR)
 
@@ -49,13 +52,13 @@ async def models() -> List[str]:
 
 
 @app.post('/predict',
-          response_model=RecordResponse,
+          response_model=PredictionResponse,
           response_model_exclude=False,
           response_description='Presence of heart disease or not',
           summary='Make prediction',
           tags=["prediction"])
 async def predict(
-        body: RecordRequest = Body(..., example=example_request)
+        body: PredictionRequest= Body(..., example=single_example)
    ) -> Dict[str, str]:
     """Make a prediction given a model name and list of features.
 
@@ -80,13 +83,13 @@ async def predict(
 
 
 @app.post('/batch-predict',
-          response_model=RecordsResponse,
+          response_model=BatchResponse,
           response_model_exclude=False,
           response_description='Presence of heart disease or not',
           summary='Make batch prediction',
           tags=['batch', 'prediction'])
 async def batch_predict(
-        body: RecordsRequest = Body(..., example=example_request)
+        body: BatchPredictionRequest= Body(..., example=batch_example)
    ) -> List[Dict[str, str]]:
     """Perform a batch prediction over mutliple patients with a given
         model name and features for each patients.

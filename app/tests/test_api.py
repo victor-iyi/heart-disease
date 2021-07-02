@@ -20,9 +20,9 @@ def test_api():
     client = TestClient(app)
 
     request_data = {
+        "model_name": "Decision Tree",
         "values": [{
             "record_id": "1",
-            "model_name": "Support Vector Machine",
             "data": {
                 "age": 63,
                 "sex": 0,
@@ -49,6 +49,6 @@ def test_api():
     assert first_record['errors'] is None
     assert first_record['warnings'] is None
 
-    assert first_record['data']['model_name'] == 'Support Vector Machine'
+    assert first_record['data']['model_name'] == 'Decision Tree'
     assert first_record['data']['confidence_score'] == 90.2
     assert first_record['data']['has_heart_disease'] is True

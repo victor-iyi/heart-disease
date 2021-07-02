@@ -22,11 +22,8 @@ class Features(BaseModel):
     thal: int       # Literal[0, 1, 2, 3]  - 0, 1, 2 or 3
 
 
-class RecordRequest(BaseModel):
-    """Request model for a single record."""
-
-    """Record identifier number."""
-    record_id: str
+class PredictionRequest(BaseModel):
+    """Request model for a single prediction."""
 
     """Name of model to be used for prediction."""
     model_name: str
@@ -35,20 +32,33 @@ class RecordRequest(BaseModel):
     data: Features
 
 
-class RecordsRequest(BaseModel):
-    """Request for multiple models for batch prediction."""
+class RecordRequest(BaseModel):
+    """Request model for single record."""
+
+    """Record identifier number."""
+    record_id: str
+
+    """Mapping of feature column names and values."""
+    data: Features
+
+
+class BatchPredictionRequest(BaseModel):
+    """Request model for batch prediction."""
+
+    """Name of mdoel to be used for batch prediction."""
+    model_name: str
 
     """List of multiple requests."""
     values: List[RecordRequest]
 
 
-class RecordDataResponse(BaseModel):
+class PredictionResponse(BaseModel):
 
     """Name of Machine Learning model responsible for prediction result."""
     model_name: str
 
     """Confidence score by model (%)."""
-    confidence_score: float
+    confidence_score: Optional[float]
 
     """Whether a patient has heart disease or not. 0 for no heart disease.
     Any positive integer (usually 1) represents presence of heart disease."""
@@ -61,12 +71,12 @@ class Message(BaseModel):
 
 class RecordResponse(BaseModel):
     record_id: str
-    data: RecordDataResponse
+    data: PredictionResponse
     errors: Optional[List[Message]]
     warnings: Optional[List[Message]]
 
 
-class RecordsResponse(BaseModel):
+class BatchResponse(BaseModel):
     values: List[RecordResponse]
 
 

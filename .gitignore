@@ -56,3 +56,5 @@ README.html
 
 # IPython notebook
 .ipynb_checkpoints
+
+trained_model/

@@ -23,31 +23,32 @@ from __future__ import annotations
 import os
 
 from abc import ABCMeta
-from typing import Any, Dict, ForwardRef, Iterable, Literal
-from typing import Mapping, Optional, TypeVar, Union
+from typing import Any, Dict, ForwardRef, Iterable
+try:
+    from typing import Literal
+except ImportError:
+    # PEP 586
+    from typing_extensions import Literal
+from typing import Optional, TypeVar, Union
 
 import joblib
 import numpy as np
 from sklearn.metrics import confusion_matrix
+from sklearn.base import ClassifierMixin
 
 from heart_disease.config import Log
 
 # Array-like types.
 _T = TypeVar('_T', np.ndarray, int, float)
 _Array = Union[_T, Iterable[_T]]
-_NestedArray = Union[
-        _Array,
-        Iterable[ForwardRef('_NestedArray')],
-        Mapping[str, ForwardRef('_NestedArray')],
-]
 
 
 class Model(metaclass=ABCMeta):
     """Base class for classifier models."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        # Various model objects. (SVM, NB, DT, KNN).
-        self._model: object = None
+        # Various (classifier) model objects. (SVM, NB, DT, KNN).
+        self._model: ClassifierMixin = None
 
     def __repr__(self) -> str:
         return repr(self._model)
@@ -56,7 +57,34 @@ class Model(metaclass=ABCMeta):
         return str(self._model)
 
     def __call__(self, inputs: _Array) -> Dict[str, _Array]:
-        """See ``self.predict(X)``."""
+        """Makes predictions as well as report the confidence level for each
+           class labels.
+
+        Args:
+            inputs (_Array): Prediction data. New (unseen) data to be
+                predicted.
+
+        Returns:
+            Dict[str, _Array]:
+                `prediction` with the predicted class index and;
+
+                `confidence` with a floating value for each classes
+                representing the `confidence` that a particular class label is
+                the right class.
+                Some algorithms cannot return the confidence level in
+                which case `confidence` is `None`.
+
+            Example:
+            ```python
+                >>> {
+                ....  'prediction': [1., 0., 1.],
+                ....  'confidence': [[0.2, 0.8],
+                ....                 [1.0, 0.0],
+                ....                 [0.3, 0.7]]
+                ....  }
+
+            ```
+        """
 
         prediction = self.predict(inputs)
         confidence = self.predict_probability(inputs)
@@ -68,7 +96,6 @@ class Model(metaclass=ABCMeta):
 
     def train(
             self, X: _Array, y: _Array,
-            sample_weight: Optional[_Array] = None,
     ) -> ForwardRef('Model'):
         """Train model according to X, y.
 
@@ -78,8 +105,6 @@ class Model(metaclass=ABCMeta):
                 and n_features is the number of features.
             y (_Array): array-like of shape (n_samples,)
                 Target values.
-            sample_weight (_Array): array-like of shape (n_samples,).
-                Sample weight. Defaults to None.
 
         Raises:
             TypeError - If `self._model` is not defined.
@@ -89,13 +114,14 @@ class Model(metaclass=ABCMeta):
         """
 
         if self._model is not None:
-            self._model.fit(X, y, sample_weight=sample_weight)
-            return self
+            self._model.fit(X, y)
         else:
             raise TypeError('self._model not defined')
 
+        return self
+
     def test(
-            self, X: _Array, y: _Array,
+            self, X: _Array, y: _Array, *,
             sample_weight: Optional[_Array] = None,
     ) -> float:
         """Return the mean accuracy on the given test data and labels.
@@ -154,17 +180,59 @@ class Model(metaclass=ABCMeta):
                 as they appear in the attribute.
         """
         if self._model is not None:
-            return self._model.predict_proba(inputs)
+            try:
+                return self._model.predict_proba(inputs)
+            except AttributeError as e:
+                Log.exception(e)
         else:
             raise TypeError('self.model is not defined')
 
-    @staticmethod
-    def metrics(
-            y_true: _Array, y_pred: _Array, *,
-            labels: Optional[_Array] = None,
-            sample_weight: Optional[_Array] = None,
-            normalize: Optional[Literal['true', 'pred', 'all']] = None
-    ) -> _Array:
+    def metrics(self, X: _Array, y: _Array, *,
+                labels: Optional[_Array] = None,
+                sample_weight: Optional[_Array] = None,
+                normalize: Optional[Literal['true', 'pred', 'all']] = None
+                ) -> _Array:
+        """Compute confusion matrix to evaluate the accuracy of a
+        classification.
+
+        Arguments:
+            X (_Array): array-like of shape (n_samples, n_features) - Test samples.
+            y (_Array): array-like of shape (n_samples,) or (n_samples, n_outputs)
+                - Ture lables for `X`.
+            labels (_Array): array-like of shape (n_classes).
+                List of labels to index the matrix. This may be used to reorder
+                or select a subset of labels.
+                If `None` is given, those that appear at least once in `y_true`
+                or `y_pred` are used in sorted order. Defaults to None.
+            sample_weight (_Array): array-like of shape (n_samples,).
+                Sample weight. Defaults to None.
+            normalize: {'true', 'pred', 'all'}. Normalizes confusion matrix
+                over the true (rows), predicted (columns) conditions or all
+                population. If None, confusion matrix will not be normalized.
+
+        See Also:
+            ``self.confusion_matrix(y_true, y_pred, ...)``.
+
+        Returns:
+            C : ndarray of shape (n_classes, n_classes)
+                Confusion matrix whose i-th row and j-th column entry
+                indicates the number of samples with true lable being i-th
+                class and predicted label being j-th class.
+        """
+        # Ground truth (correct) target values. (n_samples,)
+        y_true = y
+        # Estimated targets as returned by a classifier. (n_samples,)
+        y_pred = self.predict(X)
+
+        return confusion_matrix(y_true, y_pred,
+                                labels=labels,
+                                sample_weight=sample_weight,
+                                normalize=normalize)
+
+    def confusion_matrix(self, y_true: _Array, y_pred: _Array, *,
+                         labels: Optional[_Array] = None,
+                         sample_weight: Optional[_Array] = None,
+                         normalize: Optional[Literal['true', 'pred', 'all']] = None):
         """Compute confusion matrix to evaluate the accuracy of a
         classification.
 
@@ -184,15 +252,16 @@ class Model(metaclass=ABCMeta):
                 over the true (rows), predicted (columns) conditions or all
                 population. If None, confusion matrix will not be normalized.
 
+        See Also:
+            ``self.metrix(X, y, ...)``.
+
         Returns:
             C : ndarray of shape (n_classes, n_classes)
                 Confusion matrix whose i-th row and j-th column entry
                 indicates the number of samples with true lable being i-th
                 class and predicted label being j-th class.
         """
-
-        return confusion_matrix(y_true, y_pred,
-                                labels=labels,
+        return confusion_matrix(y_true, y_pred, labels=labels,
                                 sample_weight=sample_weight,
                                 normalize=normalize)
 

@@ -7,20 +7,21 @@ import numpy as np
 
 from heart_disease import base
 from heart_disease import models
+from heart_disease.config import FS
 
 _T = TypeVar('_T', int, float)
 _Array = Union[np.ndarray, List[_T]]
 _NestedArray = Union[
-        _Array,
-        Iterable[ForwardRef('_NestedArray')],
-        Mapping[str, ForwardRef('_NestedArray')],
+    _Array,
+    Iterable[ForwardRef('_NestedArray')],
+    Mapping[str, ForwardRef('_NestedArray')],
 ]
 
 
 class SavedModel:
     """Loads saved models and makes prediction."""
 
-    def __init__(self, model_dir: str = 'data/trained_model') -> None:
+    def __init__(self, model_dir: str = FS.SAVED_MODELS) -> None:
         if not os.path.isdir(model_dir):
             raise FileNotFoundError(f'{model_dir} was not found.')
 

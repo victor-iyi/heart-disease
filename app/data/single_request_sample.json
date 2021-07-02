@@ -1,0 +1,19 @@
+{
+  "record_id": "1",
+  "model_name": "Decision Tree",
+  "data": {
+    "age": 23,
+    "sex": 2,
+    "cp": 1,
+    "trestbps": 132,
+    "chol": 228,
+    "fbs": 0,
+    "restecg": 2,
+    "thalach": 133,
+    "exang": 0,
+    "oldpeak": 1.5,
+    "slope": 0,
+    "ca": 1,
+    "thal": 3
+  }
+}
