@@ -85,6 +85,16 @@ class SavedModel:
         """
         results = self._model(inputs)
 
+        prediction = results['prediction']
+        confidence = results['confidence']
+
+        results.update({
+            # Has heart disease or not (true/false).
+            'has_heart_disease': np.cast[bool](prediction),
+            # Update `confidence` to (%) and as `has_heart_disease`.
+            'confidence': confidence * 100 if confidence is not None else None,
+        })
+
         return results
 
     @property

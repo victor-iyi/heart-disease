@@ -3,7 +3,11 @@
 # Install virtual environment.
 pip3 install --user virtualenv
 
-# Create a virtual environment and install requirements.
-virtualenv .venv && \
-    source .venv/bin/activate && \
-    pip install -r requirements.txt
+# Create and activate a virtual environment.
+virtualenv venv
+source venv/bin/activate
+# On windows:
+# venv\Scripts\activate
+
+# Install requirements.
+pip install -r requirements.txt

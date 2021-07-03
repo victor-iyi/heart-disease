@@ -345,4 +345,5 @@ class Model(metaclass=ABCMeta):
 
     @model.setter
     def model(self, _model: object) -> None:
-        self._model = _model
+        self._model= _model
+
