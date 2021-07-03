@@ -93,8 +93,10 @@ class Data:
 
     @overload
     def has_heart_disease(self, target: int) -> bool: ...
+
     @overload
     def has_heart_disease(self, target: float) -> bool: ...
+
     @overload
     def has_heart_disease(self, target: _Target) -> _Target: ...
 
