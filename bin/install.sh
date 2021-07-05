@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Install virtual environment.
-pip3 install --user virtualenv
+pip3 install --upgrade virtualenv
 
 # Create and activate a virtual environment.
 virtualenv venv
