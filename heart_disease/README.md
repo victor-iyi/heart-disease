@@ -32,7 +32,7 @@ Machine learning models built to diagnose heart diseases include:
 In `heart_disease/base.py` contains the base class for all models (`Model`)
 which contain the API in which all subclasses are called and implemented.
 
-To create a new model, all you need to do is to create a new `sklearn` model.
+To create a new model, all you need to do is to initialize a new `sklearn` model.
 For example:
 
 ```python
