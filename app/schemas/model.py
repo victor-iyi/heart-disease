@@ -17,6 +17,8 @@ from pydantic import BaseModel  # , Field
 
 
 class AvailableModels(BaseModel):
+    """List of trained models available to make necessary predictions."""
+
     models: List[str]
 
 
@@ -35,6 +37,9 @@ class Features(BaseModel):
     ca: int         # Literal[0, 1, 2]  - 0 1 or 2
     thal: int       # Literal[0, 1, 2, 3]  - 0, 1, 2 or 3
 
+    class Config:
+        orm_mode = True
+
 
 class PredictionRequest(BaseModel):
     """Request model for a single prediction."""
@@ -45,25 +50,28 @@ class PredictionRequest(BaseModel):
     """Mapping of feature column names and values."""
     data: Features
 
+    class Config:
+        orm_mode = True
+
 
 class RecordRequest(BaseModel):
     """Request model for single record."""
 
     """Record identifier number."""
-    record_id: str
+    id: int
 
     """Mapping of feature column names and values."""
     data: Features
 
 
-class BatchPredictionRequest(BaseModel):
-    """Request model for batch prediction."""
+# class BatchPredictionRequest(BaseModel):
+#     """Request model for batch prediction."""
 
-    """Name of mdoel to be used for batch prediction."""
-    model_name: str
+#     """Name of mdoel to be used for batch prediction."""
+#     model_name: str
 
-    """List of multiple requests."""
-    values: List[RecordRequest]
+#     """List of multiple requests."""
+#     values: List[RecordRequest]
 
 
 class PredictionResponse(BaseModel):
@@ -78,20 +86,33 @@ class PredictionResponse(BaseModel):
     Any positive integer (usually 1) represents presence of heart disease."""
     has_heart_disease: bool
 
+    class Config:
+        orm_mode = True
+
 
 class Message(BaseModel):
+
+    """Error/warning messages."""
     message: str
 
 
 class RecordResponse(BaseModel):
-    record_id: str
+
+    """Response identifier."""
+    id: int
+
+    """If everything went well, here's the response data."""
     data: PredictionResponse
+
+    """Error(s) occurred"""
     errors: Optional[List[Message]]
+
+    """Any warning(s) information/log"""
     warnings: Optional[List[Message]]
 
 
-class BatchResponse(BaseModel):
-    values: List[RecordResponse]
+# class BatchResponse(BaseModel):
+#     values: List[RecordResponse]
 
 
 class Metadata(BaseModel):

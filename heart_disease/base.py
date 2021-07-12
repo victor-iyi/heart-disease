@@ -91,11 +91,11 @@ class Model(metaclass=ABCMeta):
             Example:
             ```python
                 >>> {
-                ....  'prediction': [1., 0., 1.],
-                ....  'confidence': [[0.2, 0.8],
-                ....                 [1.0, 0.0],
-                ....                 [0.3, 0.7]]
-                ....  }
+                ...  'prediction': [1., 0., 1.],
+                ...  'confidence': [[0.2, 0.8],
+                ...                 [1.0, 0.0],
+                ...                 [0.3, 0.7]]
+                ...  }
 
             ```
         """

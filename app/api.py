@@ -12,129 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-from typing import Dict, List
-
-import srsly
-
-from dotenv import find_dotenv, load_dotenv
-from fastapi import Body, FastAPI
+from fastapi import Depends, FastAPI
 from starlette.responses import RedirectResponse
 
-from app.inference import SavedModel
-from app.model import AvailableModels, Metadata
-from app.model import BatchPredictionRequest, BatchResponse
-from app.model import PredictionRequest, PredictionResponse
-from heart_disease.config.consts import FS
+from app.database import Base, engine
+from app.dependencies import get_db
+from app.routers import model, predict, users
 
 
-load_dotenv(find_dotenv())
-PREFIX: str = os.getenv('CLUSTER_ROUTE_PREFIX', '').rstrip('/')
-
-# Path to `saved_model.pb`
-MODEL_DIR: str = os.getenv('MODEL_DIR', FS.SAVED_MODELS)
+# Create the database.
+Base.metadata.create_all(bind=engine)
 
 # App object.
 app = FastAPI(
     title='heart-disease',
     version='1.0',
     description='Predict heart disease with different ML algorithms.',
-    openapi_prefix=PREFIX,
+    dependencies=[Depends(get_db)],
 )
 
-# Request example.
-single_example = srsly.read_json('app/data/single_request_sample.json')
-batch_example = srsly.read_json('app/data/batch_request_sample.json')
+# Add routers.
+app.include_router(model.router)
+app.include_router(predict.router)
+app.include_router(users.router)
 
-# Loaded saved model object.
-model = SavedModel(model_dir=MODEL_DIR)
+
+# @app.middleware("http")
+# async def db_session_middleware(request: Request, call_next: Callable[[Request], Response]) -> Response:
+#     response = Response('Internal server error', status_code=500)
+#     try:
+#         request.state.db = SessionLocal()
+#         response = await call_next(request)
+#     finally:
+#         request.state.db.close()
+#     return response
 
 
 @app.get('/', include_in_schema=False)
-async def docs_redirect():
-    return RedirectResponse(f'{PREFIX}/docs')
-
-
-@app.get('/models',
-         response_model=AvailableModels,
-         response_description='List of available models',
-         summary='Return available models',
-         tags=['available-models'])
-async def models() -> List[str]:
-    """Returns the list of models that are supported by API."""
-
-    return model.list_available_models()
-
-
-@app.post('/predict',
-          response_model=PredictionResponse,
-          response_model_exclude=False,
-          response_description='Presence of heart disease or not',
-          summary='Make prediction',
-          tags=["prediction"])
-async def predict(
-        body: PredictionRequest = Body(..., example=single_example)
-) -> Dict[str, str]:
-    """Make a prediction given a model name and list of features.
-
-    - **record_id**: Unique identifier for each set of records to be
-        predicted.
-    - **model_name**: Name of model. Must be one of [Suport Vector Machine,
-        Decision Tree, Naive Bayes and K-Nearest Neighbors].
-    - **data**: List of features are:
-        age, sex, cp, trestbps, chol, fbs, restecg,
-        thalach, exang, oldpeak, slope, ca, thal
-    """
-    res = {}
-    # Extract data in correct order.
-    data_dict = body.data.dict()
-    print(data_dict)
-
-    # Load saved model.
-    # Get the model via body.model_name
-
-    # Make prediction.
-    return res
-
-
-@app.post('/batch-predict',
-          response_model=BatchResponse,
-          response_model_exclude=False,
-          response_description='Presence of heart disease or not',
-          summary='Make batch prediction',
-          tags=['batch', 'prediction'])
-async def batch_predict(
-        body: BatchPredictionRequest = Body(..., example=batch_example)
-) -> List[Dict[str, str]]:
-    """Perform a batch prediction over mutliple patients with a given
-        model name and features for each patients.
-
-    - **values**: List of `RecordRequest`.
-
-    `RecordRequest` has the following info:
-
-    - **record_id**: Unique identifier for each set of records to be
-        predicted.
-    - **model_name**: Name of model. Must be one of [Suport Vector Machine,
-        Decision Tree, Naive Bayes and K-Nearest Neighbors].
-    - **data**: List of features are:
-        age, sex, cp, trestbps, chol, fbs, restecg,
-        thalach, exang, oldpeak, slope, ca, thal
-    """
-
-    for req in body.values:
-        [f for _, f in req.data.dict()]
-
-    return []
-
-
-@app.get('/metadata', response_model=Metadata)
-async def metadata() -> Dict[str, str]:
-    """Returns important metadata about current API."""
-
-    return {
-        'name': 'heart_disease',
-        'version': '1.0.0',
-        'author': 'Victor I. Afaolbi',
-        'license': 'MIT or Apache',
-    }
+async def docs_redirect() -> RedirectResponse:
+    return RedirectResponse(f'/docs')
