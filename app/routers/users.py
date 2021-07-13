@@ -26,9 +26,9 @@ router = APIRouter(
 )
 
 
-# @router.get('/')
-# async def read_patients() -> None:
-#     pass
+@router.get('/{user_id}', response_model=users.User)
+async def read_user(user_id: int) -> None:
+    pass
 
 
 @router.get(
@@ -36,16 +36,6 @@ router = APIRouter(
     response_model=users.Patient
 )
 async def read_patient(patient_id: int) -> None:
-    pass
-
-
-@router.post('/patient', response_model=users.Patient)
-def create_patient(patient: users.Patient) -> None:
-    pass
-
-
-@router.post('/', response_model=users.UserRegister)
-async def create_user(user: users.UserRegister) -> None:
     pass
 
 
@@ -57,6 +47,16 @@ async def create_user(user: users.UserRegister) -> None:
 async def read_practitioner(
     practitioner_id: int,
 ) -> None:
+    pass
+
+
+@router.post('/', response_model=users.UserRegister)
+async def create_user(user: users.UserRegister) -> None:
+    pass
+
+
+@router.post('/patient', response_model=users.Patient)
+def create_patient(patient: users.Patient) -> None:
     pass
 
 

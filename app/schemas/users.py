@@ -23,10 +23,14 @@ class Category(Enum):
     patient: str = 'Patient'
     practitioner: str = 'Medical Practitioner'
 
+    class Config:
+        orm_mode = True
+
 
 class User(BaseModel):
     email: EmailStr = Field(
-        ..., title='User\'s email address',
+        ...,
+        title='User\'s email address',
         description='Email must be a validated email'
     )
     password: str = Field(
@@ -37,8 +41,11 @@ class User(BaseModel):
         max_length=20,
     )
 
+    class Config:
+        orm_mode = True
 
-class UserRegister(BaseModel):
+
+class UserRegister(User):
     first_name: Optional[str] = Field(
         None,
         title='User\'s first name',
@@ -56,9 +63,6 @@ class UserRegister(BaseModel):
         title='User\'s category',
         description='Category must be either a Patient or a Medical Practitioner',
     )
-
-    class Config:
-        orm_mode = True
 
 
 class Patient(User):

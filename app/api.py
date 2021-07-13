@@ -51,3 +51,11 @@ app.include_router(users.router)
 @app.get('/', include_in_schema=False)
 async def docs_redirect() -> RedirectResponse:
     return RedirectResponse(f'/docs')
+
+# @app.on_event('startup')
+# async def startup():
+#     await database.connect()
+
+# @app.on_event('shutdown')
+# async def shutdown():
+#     await database.disconnect()
