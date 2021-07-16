@@ -38,6 +38,8 @@ import os
 
 from abc import ABCMeta
 from typing import Any, Dict, ForwardRef, Iterable
+
+from matplotlib.pyplot import plot
 try:
     from typing import Literal
 except ImportError:
@@ -47,7 +49,7 @@ from typing import Optional, TypeVar, Union
 
 import joblib
 import numpy as np
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 from sklearn.base import ClassifierMixin
 
 from heart_disease.config import Log
@@ -202,6 +204,7 @@ class Model(metaclass=ABCMeta):
             raise TypeError('self.model is not defined')
 
     def metrics(self, X: _Array, y: _Array, *,
+                plot: Optional[bool] = True,
                 labels: Optional[_Array] = None,
                 sample_weight: Optional[_Array] = None,
                 normalize: Optional[Literal['true', 'pred', 'all']] = None
@@ -237,8 +240,16 @@ class Model(metaclass=ABCMeta):
         """
         # Ground truth (correct) target values. (n_samples,)
         y_true = y
+
         # Estimated targets as returned by a classifier. (n_samples,)
         y_pred = self.predict(X)
+
+        if plot:
+            # Plot confusion matrix.
+            plot_confusion_matrix(self._model, X, y_true,
+                                  labels=labels,
+                                  sample_weight=sample_weight,
+                                  normalize=normalize)
 
         return confusion_matrix(y_true, y_pred,
                                 labels=labels,
@@ -345,5 +356,4 @@ class Model(metaclass=ABCMeta):
 
     @model.setter
     def model(self, _model: object) -> None:
-        self._model= _model
-
+        self._model = _model
