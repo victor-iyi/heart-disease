@@ -12,28 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.schemas.model import PredictionRequest
-import srsly
+import json
+from typing import Dict
 
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body
 
-from app.api import get_db
+from app.schemas import model
 
 
+# HTTP: /predict
 router = APIRouter(
     prefix='predict',
-    tags=['model', 'predict'],
-    dependencies=[Depends(get_db)]
+    tags=['models', 'predict'],
+    responses={403: 'Operation forbidden!'},
 )
 
 # Request sample.
-request_sample = srsly.read_json('app/sample/single_request_sample.json')
+request_sample: Dict[str, str] = json.load(
+    'app/sample/single_request_sample.json'
+)
 
 
-@router.get('/')
+@router.get(
+    '/',
+    response_model=model.PredictionResponse,
+    responses={403: 'Operation forbidden!'},
+    tags=['predict'],
+)
 async def predict_heart_disease(
-    body: PredictionRequest = Body(..., example=request_sample)
-) -> None:
+    body: model.PredictionRequest = Body(..., example=request_sample),
+) -> model.PredictionResponse:
     """Make prediction given features.
 
     Note:
@@ -44,14 +52,19 @@ async def predict_heart_disease(
         body (PredictionRequest, optional): Prediction body.
             Defaults to `Body(..., example=request_sample)`
     """
-    pass
+    body.model_name = 'Decision Tree'
 
 
-@router.get('/{model_name}')
+@router.get(
+    '/{model_name}',
+    response_model=model.PredictionResponse,
+    responses={403: 'Operation forbidden!'},
+    tags=['predict'],
+)
 async def predict_with_model(
     model_name: str,
-    body: PredictionRequest = Body(..., example=request_sample)
-) -> None:
+    body: model.PredictionRequest = Body(..., example=request_sample)
+) -> model.PredictionResponse:
     """Use a `model_name` to make prediction given model features.
 
     Args:
@@ -59,10 +72,4 @@ async def predict_with_model(
         body (PredictionRequest, optional): Prediction body.
             Defaults to Body(..., example=request_sample).
     """
-    pass
-
-
-@router.post('/')
-async def add_data():
-    """Add prediction data to the Database."""
     pass

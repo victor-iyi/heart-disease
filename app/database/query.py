@@ -21,27 +21,74 @@ from app.database import tables
 class User:
 
     @staticmethod
-    def get_user(db: Session, user_id: int) -> tables.User:
-        return db.query(tables.User).filter(tables.User.id == user_id).first()
+    def get_user(
+        db: Session, user_id: int
+    ) -> tables.User:
+        return db.query(tables.User)\
+                .filter(tables.User.id == user_id)\
+                .first()
 
     @staticmethod
-    def get_user_by_email(db: Session, email: str) -> tables.User:
-        return db.query(tables.User).filter(tables.User.email == email).first()
+    def get_user_by_email(
+        db: Session, email: str
+    ) -> tables.User:
+        return db.query(tables.User)\
+                .filter(tables.User.email == email)\
+                .first()
 
     @staticmethod
-    def add_user(db: Session, user: users.Users) -> None:
+    def add_user(
+        db: Session, user: users.Users
+    ) -> tables.User:
         pass
 
 
 class Patient(User):
 
     @staticmethod
-    def add_patient(db: Session, patient: users.Patient) -> None:
+    def get_patient(
+        db: Session, patient_id: int
+    ) -> tables.Patient:
+        return db.query(tables.Patient)\
+                .filter(tables.Patient.id == patient_id)\
+                .first()
+
+    @staticmethod
+    def add_patient(
+        db: Session, patient: users.Patient
+    ) -> tables.Patient:
         pass
 
+class Practitioner(User):
+    @staticmethod
+    def get_practitioner(
+        db: Session,
+        practitioner_id: int
+    ) -> tables.Practitioner:
+        return db.query(tables.Practitioner)\
+                .filter(tables.Practitioner.id == practitioner_id)\
+                .first()
+
+    @staticmethod
+    def add_practitioner(
+        db: Session, patient: users.Practitioner
+    ):
+        pass
 
 class Model:
 
     @staticmethod
-    def add_features(db: Session, features: model.Features):
-        pass
+    def add_features(
+        db: Session, features: model.Features
+    ) -> tables.Feature:
+        # Create features from schema.
+        db_feature = tables.Feature(**features.dict())
+
+        # Add features to db.
+        db.add(db_feature)
+        db.commit()
+
+        # Update the db with the new feature.
+        db.refresh(db_feature)
+
+        return db_feature

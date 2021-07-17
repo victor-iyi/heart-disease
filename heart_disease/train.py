@@ -15,7 +15,7 @@
 import os
 import concurrent.futures
 
-from typing import TypeVar
+from typing import Type, TypeVar
 from functools import partial
 
 from heart_disease.data import Data
@@ -41,6 +41,7 @@ def train_all(filename: str, test_size: float = 0.2) -> None:
 
     # Create a partial function where data is passed in.
     func = partial(_train_and_save_model, X_train, y_train)
+    # func = partial(_train_and_save, X_train, y_train)
 
     # Train and save models concurrently.
     with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -83,6 +84,21 @@ def _train_and_save_model(X_train: _T, y_train: _T, model_name: str) -> None:
     model.save_model(path)
 
 
+def _train_and_save(X_train: _T, y_train: _T, model: Type[Model]) -> None:
+    """Train and save model process function.
+
+    Args:
+        X_train (_T): Train features.
+        y_train (_T): Train labels/target.
+        model (Type[Model]): Model to be used.
+    """
+    # Load & train model.
+    _model = model()
+    _model.train(X_train, y_train)
+
+    # Save model.
+    model.save_model()
+
+
 if __name__ == '__main__':
     train_all('data/heart.csv')
-

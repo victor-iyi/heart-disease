@@ -39,7 +39,6 @@ import os
 from abc import ABCMeta
 from typing import Any, Dict, ForwardRef, Iterable
 
-from matplotlib.pyplot import plot
 try:
     from typing import Literal
 except ImportError:
@@ -52,7 +51,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix, plot_confusion_matrix
 from sklearn.base import ClassifierMixin
 
-from heart_disease.config import Log
+from heart_disease.config import Log, FS
 
 # Array-like types.
 _T = TypeVar('_T', np.ndarray, int, float)
@@ -65,6 +64,15 @@ class Model(metaclass=ABCMeta):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Various (classifier) model objects. (SVM, NB, DT, KNN).
         self._model: ClassifierMixin = None
+
+        # Name of models (used as their save path).
+        self._name: str = kwargs.get('name', self._model.__class__.__name__)
+
+        # Path to save model.
+        self._path: str = kwargs.get(
+            'path', os.path.join(FS.SAVED_MODELS,
+                                 f'{self._name}.joblib')
+        )
 
     def __repr__(self) -> str:
         return repr(self._model)
@@ -294,7 +302,7 @@ class Model(metaclass=ABCMeta):
                                 sample_weight=sample_weight,
                                 normalize=normalize)
 
-    def save_model(self, path: str) -> None:
+    def save_model(self) -> None:
         """Save classifiers into `path`.
 
         Arguments:
@@ -324,21 +332,23 @@ class Model(metaclass=ABCMeta):
             ```
         """
         # Create directory if it doesn't exist.
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        os.makedirs(os.path.dirname(self._path), exist_ok=True)
 
-        joblib.dump(self._model, path)
-        Log.info(f'Model saved to {path}')
+        joblib.dump(self._model, self._path)
+        Log.info(f'Model saved to {self._path}')
 
-    def load_model(self, path: str) -> None:
+    def load_model(self, path: str = None) -> None:
         """Load saved classifier from `path`.
 
         Arguments:
             path (str): Path to a `joblib` saved model.
                 Preferred extension: `path/to/file.joblib`.
+                Defaults to `{FS.SAVED_MODELS}/{self.name}.joblib`
 
         Raises:
             FileNotFoundError - If `path` does not exist or isn't a file.
         """
+        path = path or self._path
 
         if os.path.isfile(path):
             raise FileNotFoundError(f'{path} could not be found.')
@@ -352,8 +362,23 @@ class Model(metaclass=ABCMeta):
 
     @property
     def model(self) -> object:
+        """Model object defined as a `scikit-learn` model."""
         return self._model
 
     @model.setter
     def model(self, _model: object) -> None:
         self._model = _model
+
+    @property
+    def name(self) -> str:
+        """Model name"""
+        return self._name
+
+    @property
+    def path(self) -> str:
+        """Path to model's trained object."""
+        return self._path
+
+    @path.setter
+    def path(self, path: str) -> None:
+        self._path = path

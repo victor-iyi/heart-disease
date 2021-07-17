@@ -54,7 +54,7 @@ def default_args() -> argparse.Namespace:
     return args
 
 
-def main() -> None:
+def main() -> int:
     # Get the default arguments.
     args = default_args()
 
@@ -81,7 +81,9 @@ def main() -> None:
             test_size=args.test_size
         )
 
+    return 0
+
 
 if __name__ == '__main__':
-    main()
+    exit(main())
 

@@ -13,126 +13,88 @@
 # limitations under the License.
 
 import os
+import json
 from typing import Dict, List
 
-import srsly
-
-from fastapi import Body, APIRouter
 from dotenv import find_dotenv, load_dotenv
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm.session import Session
 
 from app.backend.inference import SavedModel
-from app.schemas.model import AvailableModels, Metadata
-from app.schemas.model import BatchPredictionRequest, BatchResponse
-from app.schemas.model import PredictionRequest, PredictionResponse
+from app.database.query import Model
+from app.dependencies import get_db
+from app.schemas import model
+
 from heart_disease.config.consts import FS
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix='models',
+    tags=['models'],
+)
 
 # Local .env or env files.
 load_dotenv(find_dotenv())
 
 # Request example.
-single_example = srsly.read_json('app/data/single_request_sample.json')
-batch_example = srsly.read_json('app/data/batch_request_sample.json')
+single_example: Dict[str, str] = json.load(
+    'app/sample/predict_heart_disease.json'
+)
 
 # Path to `saved_model.pb`.
 MODEL_DIR: str = os.getenv('MODEL_DIR', FS.SAVED_MODELS)
 
-# Loaded saved model object.
-saved_model = SavedModel(model_dir=MODEL_DIR)
-
-# Request example.
-single_example = srsly.read_json('app/sample/single_request_sample.json')
-batch_example = srsly.read_json('app/sample/batch_request_sample.json')
-
 
 @router.get(
-    '/models',
-    response_model=AvailableModels,
+    '/',
+    response_model=model.AvailableModels,
     response_description='List of available models',
     summary='Return available models',
-    tags=['heart-disease']
+    tags=['models']
 )
 async def available_models() -> List[str]:
     """Returns the list of models that are supported by API."""
 
+    # Loaded saved model object.
+    saved_model = await SavedModel(model_dir=MODEL_DIR)
+
     return saved_model.list_available_models()
 
 
-@router.post(
-    '/predict',
-    response_model=PredictionResponse,
-    response_model_exclude=False,
-    response_description='Presence of heart disease or not',
-    summary='Make prediction',
-    tags=['heart-disease']
+@router.get(
+    '/metadata',
+    response_model=model.Metadata,
+    tags=['models'],
 )
-async def predict(
-        body: PredictionRequest = Body(..., example=single_example)
-) -> Dict[str, str]:
-    """Make a prediction given a model name and list of features.
-
-    - **record_id**: Unique identifier for each set of records to be
-        predicted.
-    - **model_name**: Name of model. Must be one of [Suport Vector Machine,
-        Decision Tree, Naive Bayes and K-Nearest Neighbors].
-    - **data**: List of features are:
-        age, sex, cp, trestbps, chol, fbs, restecg,
-        thalach, exang, oldpeak, slope, ca, thal
-    """
-    res = {}
-    # Extract data in correct order.
-    data_dict = body.data.dict()
-    print(data_dict)
-
-    # Load saved model.
-    # Get the model via body.model_name
-
-    # Make prediction.
-    return res
-
-
-@router.post(
-    '/batch-predict',
-    response_model=BatchResponse,
-    response_model_exclude=False,
-    response_description='Presence of heart disease or not',
-    summary='Make batch prediction',
-    tags=['heart-disease']
-)
-async def batch_predict(
-        body: BatchPredictionRequest = Body(..., example=batch_example)
-) -> List[Dict[str, str]]:
-    """Perform a batch prediction over mutliple patients with a given
-        model name and features for each patients.
-
-    - **values**: List of `RecordRequest`.
-
-    `RecordRequest` has the following info:
-
-    - **record_id**: Unique identifier for each set of records to be
-        predicted.
-    - **model_name**: Name of model. Must be one of [Suport Vector Machine,
-        Decision Tree, Naive Bayes and K-Nearest Neighbors].
-    - **data**: List of features are:
-        age, sex, cp, trestbps, chol, fbs, restecg,
-        thalach, exang, oldpeak, slope, ca, thal
-    """
-
-    for req in body.values:
-        [f for _, f in req.data.dict()]
-
-    return []
-
-
-@router.get('/metadata', response_model=Metadata)
 async def metadata() -> Dict[str, str]:
     """Returns important metadata about current API."""
 
     return {
-        'name': 'heart_disease',
-        'version': '1.0.0',
+        'name': 'heart-disease',
+        'version': 'v1',
         'author': 'Victor I. Afaolbi',
+        'author-email': 'javafolabi@gmail.com',
         'license': 'MIT or Apache',
     }
+
+
+@router.post(
+    '/',
+    response_model=model.Features,
+    responses={403: 'Operation forbidden!'},
+    tags=['models'],
+)
+async def add_features(
+    features: model.Features, db: Session = Depends(get_db)
+) -> model.Features:
+    """Add prediction data to the database.
+
+    Args:
+        features (model.Features): New features to be added to db.
+        db (Session, optional): Database session. Defaults to Depends(get_db).
+
+    Returns:
+        model.Features: Added features.
+    """
+
+    return Model.add_features(db, features)

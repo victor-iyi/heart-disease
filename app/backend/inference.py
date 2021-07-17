@@ -39,6 +39,7 @@ class SavedModel:
         if not os.path.isdir(model_dir):
             raise FileNotFoundError(f'{model_dir} was not found.')
 
+        # TODO: FIX the value of `self.model_dir`.
         self.model_dir = model_dir
         self._models: Dict[str, base.Model] = {}
 
@@ -63,6 +64,15 @@ class SavedModel:
             base.Model: Corresponding (trained) loaded model class.
         """
         return self._models[item]
+
+    def get_best_model(self) -> base.Model:
+        """Returns the saved model with the best accuracy.
+
+        Returns:
+            base.Model: Best saved model.
+        """
+        # TODO: Get model with the best accuracy.
+        pass
 
     def list_available_models(self) -> List[str]:
         """List all the available (trained) models.

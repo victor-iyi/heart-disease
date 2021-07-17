@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, Dict, List, Type
 
 import sklearn.svm as svm
 import sklearn.naive_bayes as naive_bayes
@@ -37,7 +37,9 @@ class SupportVectorMachine(base.Model):
     """C-support vector Classificiation."""
 
     def __init__(self, **kwargs: Any) -> None:
-        super(SupportVectorMachine, self).__init__()
+        super(SupportVectorMachine, self).__init__(
+            name='Support Vector Machine'
+        )
 
         self._model = svm.SVC(**kwargs)
 
@@ -46,7 +48,9 @@ class KNearestNeighbors(base.Model):
     """Classifier implementing the k-nearest neighbors vote."""
 
     def __init__(self, k: int = 5, **kwargs: Any) -> None:
-        super(KNearestNeighbors, self).__init__()
+        super(KNearestNeighbors, self).__init__(
+            name='K-Nearest Neighbors'
+        )
         self.k = k
 
         self._model = neighbors.KNeighborsClassifier(
@@ -60,7 +64,7 @@ class NaiveBayes(base.Model):
     """Gaussian Naive Bayes implementation of Naive Bayes."""
 
     def __init__(self, **kwargs: Any) -> None:
-        super(NaiveBayes, self).__init__()
+        super(NaiveBayes, self).__init__(name='Naive Bayes')
 
         self._model = naive_bayes.GaussianNB(**kwargs)
 
@@ -69,20 +73,21 @@ class DecisionTree(base.Model):
     """A decision tree classifier."""
 
     def __init__(self, **kwargs: Any) -> None:
-        super(DecisionTree, self).__init__()
+        super(DecisionTree, self).__init__(name='Decision Tree')
 
         self._model = tree.DecisionTreeClassifier(**kwargs)
 
 
-class Models(Enum):
-    """Classifier enumeration mapping."""
-    SVM = SupportVectorMachine
-    KNN = KNearestNeighbors
-    NB = NaiveBayes
-    DT = DecisionTree
+# List of models.
+Models: List[Type[base.Model]] = [
+    SupportVectorMachine,
+    KNearestNeighbors,
+    NaiveBayes,
+    DecisionTree,
+]
 
-
-MODELS: Dict[str, base.Model] = {
+# Mapping of Model name & Model.
+MODELS: Dict[str, Type[base.Model]] = {
     'Support Vector Machine': SupportVectorMachine,
     'K-Nearest Neighbors': KNearestNeighbors,
     'Naive Bayes': NaiveBayes,
