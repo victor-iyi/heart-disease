@@ -15,13 +15,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm.session import Session
 
-from app.api import get_db
 from app.database.query import Patient, User
+from app.dependencies import get_db
 from app.schemas import users
 
 
 router = APIRouter(
-    prefix='users',
+    prefix='/users',
     dependencies=[Depends(get_db)],
     responses={
         400: 'User cannot be found!'

@@ -12,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.schemas.model import Features
 import os
 
-from typing import Any, Dict, ForwardRef, Iterable
-from typing import List, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
 import numpy as np
 
+from app.schemas import model
 from heart_disease import base
 from heart_disease import models
 from heart_disease.config import FS, Log
 
+
+# Typing info.
 _T = TypeVar('_T', int, float)
 _Array = Union[np.ndarray, List[_T]]
-_NestedArray = Union[
-    _Array,
-    Iterable[ForwardRef('_NestedArray')],
-    Dict[str, ForwardRef('_NestedArray')],
-]
 
 
 class SavedModel:
@@ -78,30 +74,47 @@ class SavedModel:
         """
         return list(self._models.keys())
 
-    def predict(self, inputs: _Array) -> _NestedArray:
-        """Makes prediction from a saved moel (model_dir) given
-            unknown features.
+    def predict(
+        self,
+        inputs: _Array, *,
+        name: Optional[str] = None,
+        model: Optional[base.Model] = None
+    ) -> Dict[str, Any]:
+        """Makes prediction from saved model given unknown features.
 
         Args:
             inputs (_Array): Array-like of shape (n_samples, n_features).
                 Unknown features to be predicted.
+            name (Optional[str], optional): Name of the model to use.
+                Defaults to None.
+            model (Optional[base.Model], optional): Use model if name is not given.
+                Defaults to None.
 
         Returns:
-            np.ndarray: Output of the saved model.
+            Dict[str, Any]: Output of the saved model.
         """
-        results = self._model(inputs)
+        if not any(name, model):
+            raise ValueError('One of `name` or `model` must be provided.')
 
-        prediction = results['prediction']
-        confidence = results['confidence']
+        # Use given model or model name.
+        model = model or self._models[name]
+        result =  model(inputs)
 
-        results.update({
+        prediction = result['prediction']
+        confidence = result['confidence']
+
+        result.update({
+            # Name of the model used.
+            'model_name': model.name,
+
             # Has heart disease or not (true/false).
             'has_heart_disease': np.cast[bool](prediction),
+
             # Update `confidence` to (%) and as `has_heart_disease`.
             'confidence': confidence * 100 if confidence is not None else None,
         })
 
-        return results
+        return result
 
     def predict_all(self, inputs: _Array) -> List[Dict[str, Any]]:
         """Make prediction for all saved models.
@@ -117,27 +130,33 @@ class SavedModel:
 
         for name, model in self._models.items():
             try:
-                result = model(inputs)
+                result = self.predict(
+                    inputs=inputs, model=model, name=name
+                )
 
-                prediction = result['prediction']
-                confidence = result['confidence']
-
-                format = {
-                    'model_name': name,
-                    'confidence_score': confidence * 100 if confidence is not None else None,
-                    'has_heart_disease': np.cast[bool](prediction),
-                }
-
-                results.append(format)
+                results.append(result)
             except Exception as e:
                 Log.exception(e)
 
         return results
 
-    def data_to_array(data: Features) -> np.ndarray:
+    @staticmethod
+    def data_to_array(data: model.Features) -> np.ndarray:
+        """Convert `Features` schema to numpy array.
+
+        Args:
+            data (model.Features): Features schema.
+
+        Returns:
+            np.ndarray: Array-like.
+        """
         return np.array(data.dict().values())
 
     @property
     def models(self) -> Dict[str, base.Model]:
-        return self._models
+        """Mapping of model names and model classifier object.
 
+        Returns:
+            Dict[str, base.Model]: Model mapping.
+        """
+        return self._models

@@ -30,7 +30,7 @@ class User(Base):
     # Not null.
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
-    password_hash = Column(String, nullable=False)
+    password_hash = Column(String(64), nullable=False)
     category = Column(Category, nullable=False,
                       default=Category.patient)
 
@@ -46,12 +46,11 @@ class User(Base):
 class Patient(User):
     __tablename__ = 'patient'
 
-    id = Column(Integer, ForeignKey('user.id'),
-                primary_key=True, index=True)
+    # id = Column(Integer, ForeignKey('user.id'),
+    #             primary_key=True, index=True)
 
     # Patient info.
     age = Column(Integer)
-    last_name = Column(String(32), index=True)
     contact = Column(String(15), index=True)
     history = Column(Text)
     aliment = Column(Text)

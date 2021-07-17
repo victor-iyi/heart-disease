@@ -14,7 +14,7 @@
 
 import os
 import json
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from dotenv import find_dotenv, load_dotenv
 from fastapi import APIRouter, Depends
@@ -47,7 +47,7 @@ MODEL_DIR: str = os.getenv('MODEL_DIR', FS.SAVED_MODELS)
 
 @router.get(
     '/',
-    response_model=model.AvailableModels,
+    response_model=List[model.AvailableModels],
     response_description='List of available models',
     summary='Return available models',
     tags=['models']
@@ -81,12 +81,11 @@ async def metadata() -> Dict[str, str]:
 @router.post(
     '/',
     response_model=model.Features,
-    responses={403: 'Operation forbidden!'},
     tags=['models'],
 )
 async def add_features(
     features: model.Features, db: Session = Depends(get_db)
-) -> model.Features:
+) -> Dict[str, Any]:
     """Add prediction data to the database.
 
     Args:

@@ -12,57 +12,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app.backend.inference import SavedModel
 import json
-from typing import Dict
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body
 
+from app.backend.inference import SavedModel
 from app.schemas import model
 
 
 # HTTP: /predict
 router = APIRouter(
-    prefix='predict',
+    prefix='/predict',
     tags=['models', 'predict'],
     responses={403: 'Operation forbidden!'},
 )
 
 # Request sample.
 request_sample: Dict[str, str] = json.load(
-    'app/sample/single_request_sample.json'
+    open('app/sample/predict_heart_disease.json')
 )
 
 
 @router.get(
     '/',
-    response_model=model.PredictionResponse,
-    responses={403: 'Operation forbidden!'},
+    response_model=List[model.PredictionResponse],
     tags=['predict'],
 )
 async def predict_heart_disease(
     body: model.PredictionRequest = Body(..., example=request_sample),
-) -> model.PredictionResponse:
+) -> List[Dict[str, Any]]:
     """Make prediction given features.
 
     Note:
         Uses model with the best accuracy. To use a specific model; see
-        endpoint `GET: predict/{model_name}`.
+        endpoint `GET: /predict/{model_name}`.
 
     Args:
         body (PredictionRequest, optional): Prediction body.
             Defaults to `Body(..., example=request_sample)`
     """
     # Make predictions with all models.
-    saved_model = await SavedModel()
-    data = await saved_model.data_to_array(body.data)
-    result = await saved_model.predict_all(data)
+    saved_model = SavedModel()
+    data = SavedModel.data_to_array(body.data)
+    results = await saved_model.predict_all(data)
 
-    return {
-        'data': result,
-        'errors': None,
-        'warnings': None,
-    }
+    return results
 
 @router.get(
     '/{model_name}',
@@ -73,7 +68,7 @@ async def predict_heart_disease(
 async def predict_with_model(
     model_name: str,
     body: model.PredictionRequest = Body(..., example=request_sample)
-) -> model.PredictionResponse:
+) -> Dict[str, Any]:
     """Use a `model_name` to make prediction given model features.
 
     Args:
@@ -82,4 +77,7 @@ async def predict_with_model(
             Defaults to Body(..., example=request_sample).
     """
     # Make a prediction with a given model name.
-    pass
+    saved_model = SavedModel()
+    data = SavedModel.data_to_array(body.data)
+    result = await saved_model.predict(data, name=model_name)
+    return result

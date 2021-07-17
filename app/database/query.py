@@ -90,7 +90,7 @@ class Model:
     @staticmethod
     def add_features(
         db: Session, features: model.Features
-    ) -> model.Features:
+    ) -> tables.Feature:
         # Create features from schema.
         db_feature = tables.Feature(**features.dict())
 

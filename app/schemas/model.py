@@ -97,7 +97,7 @@ class PredictionRequest(BaseModel):
     """Request model for a single prediction."""
 
     """Name of model to be used for prediction."""
-    model_name: str
+    model_name: Optional[str] = None
 
     """Mapping of feature column names and values."""
     data: Features
