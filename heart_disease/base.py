@@ -337,7 +337,7 @@ class Model(metaclass=ABCMeta):
         joblib.dump(self._model, self._path)
         Log.info(f'Model saved to {self._path}')
 
-    def load_model(self, path: str = None) -> None:
+    def load_model(self, path: Optional[str] = None) -> None:
         """Load saved classifier from `path`.
 
         Arguments:

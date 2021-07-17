@@ -18,15 +18,6 @@ from typing import  Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
-
-class Category(Enum):
-    patient: str = 'Patient'
-    practitioner: str = 'Medical Practitioner'
-
-    class Config:
-        orm_mode = True
-
-
 class User(BaseModel):
     email: EmailStr = Field(
         ...,
@@ -45,33 +36,41 @@ class User(BaseModel):
         orm_mode = True
 
 
-class UserRegister(User):
+class Category(str, Enum):
+    """User categories: Patient & Medical Practitioner"""
+
+    patient: str = 'patient'
+    practitioner: str = 'practitioner'
+
+
+class UserInfo(User):
+    """User registration details."""
+
     first_name: Optional[str] = Field(
         None,
-        title='User\'s first name',
+        title='First name',
         description='First name must be less than 32 characters.',
         max_length=32,
     )
     last_name: Optional[str] = Field(
         None,
-        title='User\'s last name',
+        title='Last name',
         description='Last name must be less than 32 characters.',
         max_length=32,
     )
     category: Optional[Category] = Field(
         None,
-        title='User\'s category',
+        title='Category',
         description='Category must be either a Patient or a Medical Practitioner',
     )
 
+    class Config:
+        orm_mode = True
 
-class Patient(User):
-    last_name = Field(
-        None,
-        title='Patient\'s last name',
-        description='Last name must be less than 32 characters.',
-        max_length=32,
-    )
+
+class PatientInfo(User):
+    """Patient registration details."""
+
     age: Optional[int] = Field(
         None,
         title='Patient\'s age',
@@ -79,9 +78,15 @@ class Patient(User):
         lt=120,
         gt=0,
     )
+    last_name: Optional[str] = Field(
+        None,
+        title='Patient\'s last name',
+        description='Last name must be less than 32 characters.',
+        max_length=32,
+    )
     contact: Optional[str] = Field(
         None,
-        title='Patient\'s phone number',
+        title='Personal contact',
         description='Phone number could contain country area code e.g +1',
         min_len=6,
         max_length=15
@@ -96,15 +101,15 @@ class Patient(User):
         title='Underlying medical aliment',
     )
     last_visit_diagnosis: Optional[datetime] = Field(
-        datetime.now(),
+        None,
         title='Last visit date for diagnosis',
-        description='Last diagnosis visit defaults to the current date & time.'
+        description='Last diagnosis visit.',
     )
     guardian_fullname: Optional[str] = Field(
         None,
-        title='Patient\'s guardian full name',
+        title='Guardian\'s fullname',
         description='Must be less than 64 characters in total',
-        max_length=64,
+        max_length=128,
     )
     guardian_email: Optional[EmailStr] = Field(
         None,
@@ -115,7 +120,7 @@ class Patient(User):
         title='Guardian\'s phone number',
         description='Phone number could contain country\'s area code e.g +1 or +234',
         min_length=6,
-        max_items=15,
+        max_length=15,
     )
     occurences_of_illness: Optional[str] = Field(
         None,
@@ -123,11 +128,10 @@ class Patient(User):
         description='Full description of recent occurence of illness'
     )
     last_treatment: Optional[datetime] = Field(
-        datetime.now(),
+        None,
         title='Last treatment given',
-        description='Last treatment defaults to the current date & time'
+        description='Last treatment.',
     )
 
-
-class Practitioner(User):
-    pass
+    class Config:
+        orm_mode = True

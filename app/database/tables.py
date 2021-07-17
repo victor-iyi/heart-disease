@@ -25,13 +25,17 @@ class Category(Enum):
 
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = 'user'
 
+    # Not null.
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    category = Column(Enum(Category))
-    # category = Column(String(10))
+    password_hash = Column(String, nullable=False)
+    category = Column(Category, nullable=False,
+                      default=Category.patient)
+
+    first_name = Column(String(32), nullable=True)
+    last_name = Column(String(32), nullable=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'user',
@@ -42,44 +46,34 @@ class User(Base):
 class Patient(User):
     __tablename__ = 'patient'
 
-    id = Column(Integer, ForeignKey('user.id'), primary_key=True, index=True)
+    id = Column(Integer, ForeignKey('user.id'),
+                primary_key=True, index=True)
+
+    # Patient info.
     age = Column(Integer)
     last_name = Column(String(32), index=True)
     contact = Column(String(15), index=True)
     history = Column(Text)
     aliment = Column(Text)
-    last_visit_diagnosis = Column(DateTime, server_default='NOW()')
+    last_visit_diagnosis = Column(DateTime)
     guardian_fullname = Column(String(64))
     guardian_email = Column(String)
     guardian_phone = Column(String(15))
     occurences_of_illness = Column(Text)
-    last_treatment = Column(DateTime, server_default='NOW()')
+    last_treatment = Column(DateTime)
 
     user_id = Column(Integer, ForeignKey('user.id'))
     relationship(User, foreign_keys=user_id)
 
     __mapper_args__ = {
         'polymorphic_identity': 'patient',
-        'inherit_condition': id == User.id
-    }
-
-
-class Practitioner(User):
-    __tablename__ = 'practitioner'
-
-    id = Column(Integer, ForeignKey('user.id'), primary_key=True, index=True)
-
-    user_id = Column(Integer, ForeignKey('user.id'))
-    relationship(User, foreign_keys=user_id)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'practitioner',
-        'inherit_condition': id == User.id,
+        'inherit_condition': User.category == Category.patient
     }
 
 
 class Feature(Base):
     __tablename__ = 'features'
+
     # Primary key.
     id = Column(Integer, primary_key=True, index=True)
 
@@ -100,4 +94,3 @@ class Feature(Base):
 
     # Target.
     target = Column(Integer, nullable=True)
-

@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm.session import Session
 
 from app.api import get_db
-from app.database.query import User, Patient, Practitioner
+from app.database.query import Patient, User
 from app.schemas import users
 
 
@@ -32,14 +32,14 @@ router = APIRouter(
 
 @router.get(
     '/{user_id}',
-    response_model=users.User,
+    response_model=users.UserInfo,
     responses={400: 'User cannot be found!'},
     tags=['users'],
 )
 async def read_user(
     user_id: int,
     db: Session = Depends(get_db)
-) -> users.User:
+) -> users.UserInfo:
     """Get user by `user_id`.
 
     Args:
@@ -50,8 +50,7 @@ async def read_user(
         users.User: User schema.
     """
     # Get user by id.
-    user = await User.get_user(db, user_id)
-    return user
+    return User.get_user(db, user_id)
 
 
 @router.get(
@@ -62,7 +61,7 @@ async def read_user(
 )
 async def read_patient(
     patient_id: int, db: Session = Depends(get_db)
-) -> users.Patient:
+) -> users.PatientInfo:
     """Get patient by `patient_id`.
 
     Args:
@@ -76,41 +75,14 @@ async def read_patient(
     return Patient.get_patient(db, patient_id)
 
 
-@router.get(
-    '/{practitioner_id}',
-    response_model=users.Practitioner,
-    responses={
-        400: 'Practitioner cannot be found.',
-        403: 'Operation Forbidden!'
-    },
-    tags=['practitioner'],
-)
-async def read_practitioner(
-    practitioner_id: int,
-    db: Session = Depends(get_db)
-) -> users.Practitioner:
-    """Get practitioner by `practitioner_id`.
-
-    Args:
-        practitioner_id (int): Practitioner id.
-        db (Session, optional): Database session. Defaults to Depends(get_db).
-
-    Returns:
-        users.Practitioner: Practitioner schema.
-    """
-    # Get practitioner by id.
-    practitioner = await Practitioner.get_practitioner(db, practitioner_id)
-    return practitioner
-
-
 @router.post(
     '/',
     response_model=users.User,
     tags=['users'],
 )
-async def create_user(
-    user: users.User, db: Session = Depends(get_db)
-) -> users.User:
+async def register_user(
+    user: users.UserInfo, db: Session = Depends(get_db)
+) -> users.UserInfo:
     """Create a new (unique) user.
 
     Args:
@@ -139,13 +111,13 @@ async def create_user(
     response_model=users.Patient,
     tags=['patient'],
 )
-async def create_patient(
-    patient: users.Patient, db: Session = Depends(get_db)
-) -> users.Patient:
-    """Create a new (unique) patient.
+async def add_patient_info(
+    patient: users.PatientInfo, db: Session = Depends(get_db)
+) -> users.PatientInfo:
+    """Add patient info to a given user.
 
     Args:
-        patient (users.Patient): Patient registration details.
+        patient (users.PatientInfo): Patient registration details.
         db (Session, optional): Database session. Defaults to Depends(get_db).
 
     Raises:
@@ -163,42 +135,3 @@ async def create_patient(
 
     # Create new patient.
     return Patient.add_patient(db, patient)
-
-
-@router.post(
-    '/practitioner',
-    response_model=users.Practitioner,
-    tags=['practitioner'],
-    responses={
-        400: 'Practitioner already exists.',
-        403: 'Operation Forbidden!',
-    },
-)
-async def create_practitioner(
-    practitioner: users.Practitioner, db: Session = Depends(get_db)
-) -> users.Practitioner:
-    """Create a new (unique) practitioner.
-
-    Args:
-        practitioner (users.Practitioner): Practitioner registration details.
-        db (Session, optional): Database session. Defaults to Depends(get_db).
-
-    Raises:
-        HTTPException: 400 - Practitioner already exists.
-                       403 - Operation Forbidden!
-
-
-    Returns:
-        users.Practitioner: Created practitioner info.
-    """
-    # Get practitioner by email.
-    db_practitioner = await Practitioner.get_user_by_email(db, practitioner.email)
-
-    # Practitioner already exist.
-    if db_practitioner:
-        raise HTTPException(
-            status_code=400, detail='Practitioner already exists.'
-        )
-
-    # Create a new practitioner.
-    return Practitioner.add_practitioner(db, practitioner)

@@ -14,6 +14,7 @@
 
 from sqlalchemy.orm import Session
 
+from app.backend import user as user_engine
 from app.schemas import users, model
 from app.database import tables
 
@@ -23,24 +24,39 @@ class User:
     @staticmethod
     def get_user(
         db: Session, user_id: int
-    ) -> tables.User:
+    ) -> users.UserInfo:
         return db.query(tables.User)\
-                .filter(tables.User.id == user_id)\
-                .first()
+            .filter(tables.User.id == user_id)\
+            .first()
 
     @staticmethod
     def get_user_by_email(
         db: Session, email: str
-    ) -> tables.User:
+    ) -> users.User:
         return db.query(tables.User)\
-                .filter(tables.User.email == email)\
-                .first()
+            .filter(tables.User.email == email)\
+            .first()
 
     @staticmethod
     def add_user(
-        db: Session, user: users.Users
-    ) -> tables.User:
-        pass
+        db: Session, user: users.UserInfo
+    ) -> users.UserInfo:
+        # Hash user's password.
+        password_hash = user_engine.get_password_hash(user.password)
+
+        # Create a new user for insert.
+        db_user = tables.User(
+            email=user.email, password_hash=password_hash,
+            category=user.category, first_name=user.first_name,
+            last_name=user.last_name,
+        )
+
+        # Add user to db.
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+        return db_user
 
 
 class Patient(User):
@@ -48,39 +64,33 @@ class Patient(User):
     @staticmethod
     def get_patient(
         db: Session, patient_id: int
-    ) -> tables.Patient:
+    ) -> users.PatientInfo:
         return db.query(tables.Patient)\
-                .filter(tables.Patient.id == patient_id)\
-                .first()
+            .filter(tables.Patient.id == patient_id)\
+            .first()
 
     @staticmethod
     def add_patient(
-        db: Session, patient: users.Patient
-    ) -> tables.Patient:
-        pass
+        db: Session, patient: users.PatientInfo
+    ) -> users.PatientInfo:
+        # Create patient info for insert.
+        db_patient = tables.Patient(
+            **patient.dict()
+        )
 
-class Practitioner(User):
-    @staticmethod
-    def get_practitioner(
-        db: Session,
-        practitioner_id: int
-    ) -> tables.Practitioner:
-        return db.query(tables.Practitioner)\
-                .filter(tables.Practitioner.id == practitioner_id)\
-                .first()
+        # Add patient info to db.
+        db.add(db_patient)
+        db.commit()
+        db.refresh(db_patient)
 
-    @staticmethod
-    def add_practitioner(
-        db: Session, patient: users.Practitioner
-    ):
-        pass
+        return db_patient
 
 class Model:
 
     @staticmethod
     def add_features(
         db: Session, features: model.Features
-    ) -> tables.Feature:
+    ) -> model.Features:
         # Create features from schema.
         db_feature = tables.Feature(**features.dict())
 

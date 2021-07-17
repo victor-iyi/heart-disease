@@ -29,7 +29,7 @@ from heart_disease.config.consts import FS
 
 
 router = APIRouter(
-    prefix='models',
+    prefix='/models',
     tags=['models'],
 )
 
@@ -38,7 +38,7 @@ load_dotenv(find_dotenv())
 
 # Request example.
 single_example: Dict[str, str] = json.load(
-    'app/sample/predict_heart_disease.json'
+    open('app/sample/predict_heart_disease.json', 'r')
 )
 
 # Path to `saved_model.pb`.

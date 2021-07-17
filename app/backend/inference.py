@@ -12,45 +12,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from app.schemas.model import Features
 import os
 
-from typing import Dict, ForwardRef, Iterable, List
-from typing import Mapping, TypeVar, Union
+from typing import Any, Dict, ForwardRef, Iterable
+from typing import List, Optional, TypeVar, Union
 
 import numpy as np
 
 from heart_disease import base
 from heart_disease import models
-from heart_disease.config import FS
+from heart_disease.config import FS, Log
 
 _T = TypeVar('_T', int, float)
 _Array = Union[np.ndarray, List[_T]]
 _NestedArray = Union[
     _Array,
     Iterable[ForwardRef('_NestedArray')],
-    Mapping[str, ForwardRef('_NestedArray')],
+    Dict[str, ForwardRef('_NestedArray')],
 ]
 
 
 class SavedModel:
     """Loads saved models and makes prediction."""
 
-    def __init__(self, model_dir: str = FS.SAVED_MODELS) -> None:
-        if not os.path.isdir(model_dir):
-            raise FileNotFoundError(f'{model_dir} was not found.')
+    def __init__(self, model_dir: Optional[str] = None) -> None:
+        self.model_dir = model_dir or FS.SAVED_MODELS
 
-        # TODO: FIX the value of `self.model_dir`.
-        self.model_dir = model_dir
+        if not os.path.isdir(model_dir):
+            raise FileNotFoundError(f'{self.model_dir} was not found.')
+
+        # Name & model mapping.
         self._models: Dict[str, base.Model] = {}
 
         for model_file in os.listdir(self.model_dir):
             # Saved model name and full path.
-            model_name = model_file.removesuffix('.joblib')
-            path = os.path.join(model_dir, model_file)
+            path = os.path.join(self.model_dir, model_file)
+            Log.info(f'Loading {path}...')
 
             # Get model via it's saved name.
+            model_name = model_file.removesuffix('.joblib')
             _model: base.Model = models.MODELS[model_name]()
+
             _model.load_model(path)
+            Log.info(f'Loaded {_model.name} from {path}')
 
             self._models[model_name] = _model
 
@@ -64,15 +69,6 @@ class SavedModel:
             base.Model: Corresponding (trained) loaded model class.
         """
         return self._models[item]
-
-    def get_best_model(self) -> base.Model:
-        """Returns the saved model with the best accuracy.
-
-        Returns:
-            base.Model: Best saved model.
-        """
-        # TODO: Get model with the best accuracy.
-        pass
 
     def list_available_models(self) -> List[str]:
         """List all the available (trained) models.
@@ -106,6 +102,40 @@ class SavedModel:
         })
 
         return results
+
+    def predict_all(self, inputs: _Array) -> List[Dict[str, Any]]:
+        """Make prediction for all saved models.
+
+        Args:
+            inputs (_Array): Array-lie of shape (n_samples, n_features).
+                Unknown features to be predicted.
+
+        Returns:
+            List[Dict[str, Any]]: List of formatted outputs for each model.
+        """
+        results = []
+
+        for name, model in self._models.items():
+            try:
+                result = model(inputs)
+
+                prediction = result['prediction']
+                confidence = result['confidence']
+
+                format = {
+                    'model_name': name,
+                    'confidence_score': confidence * 100 if confidence is not None else None,
+                    'has_heart_disease': np.cast[bool](prediction),
+                }
+
+                results.append(format)
+            except Exception as e:
+                Log.exception(e)
+
+        return results
+
+    def data_to_array(data: Features) -> np.ndarray:
+        return np.array(data.dict().values())
 
     @property
     def models(self) -> Dict[str, base.Model]:

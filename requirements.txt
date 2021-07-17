@@ -1,6 +1,6 @@
 # Web API
 fastapi==0.65.1
-pydantic==1.8.2
+pydantic[email]==1.8.2
 httpx==0.18.2
 uvicorn[standard]==0.13.4
 

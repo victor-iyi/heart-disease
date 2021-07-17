@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from app.backend.inference import SavedModel
 import json
 from typing import Dict
 
@@ -52,8 +53,16 @@ async def predict_heart_disease(
         body (PredictionRequest, optional): Prediction body.
             Defaults to `Body(..., example=request_sample)`
     """
-    body.model_name = 'Decision Tree'
+    # Make predictions with all models.
+    saved_model = await SavedModel()
+    data = await saved_model.data_to_array(body.data)
+    result = await saved_model.predict_all(data)
 
+    return {
+        'data': result,
+        'errors': None,
+        'warnings': None,
+    }
 
 @router.get(
     '/{model_name}',
@@ -72,4 +81,5 @@ async def predict_with_model(
         body (PredictionRequest, optional): Prediction body.
             Defaults to Body(..., example=request_sample).
     """
+    # Make a prediction with a given model name.
     pass
