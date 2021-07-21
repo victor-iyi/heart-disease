@@ -58,3 +58,5 @@ README.html
 .ipynb_checkpoints
 
 trained_model/
+# Database file.
+*.db
