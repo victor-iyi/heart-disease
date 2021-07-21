@@ -14,7 +14,6 @@
 
 from sqlalchemy.orm import Session
 
-from app.backend import user as user_engine
 from app.schemas import users, model
 from app.database import tables
 
@@ -42,7 +41,7 @@ class User:
         db: Session, user: users.UserInfo
     ) -> users.UserInfo:
         # Hash user's password.
-        password_hash = user_engine.get_password_hash(user.password)
+        password_hash = tables.User.hash_password(user.password)
 
         # Create a new user for insert.
         db_user = tables.User(
@@ -84,6 +83,18 @@ class Patient(User):
         db.refresh(db_patient)
 
         return db_patient
+
+
+class Practitioner(User):
+
+    @staticmethod
+    def get_practitioner(
+        db: Session, practitioner_id: int
+    ) -> users.User:
+        return db.query(tables.Practitoner)\
+            .filter(tables.Practitoner.id == practitioner_id)\
+            .first()
+
 
 class Model:
 

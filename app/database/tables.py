@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey
+from passlib.context import CryptContext
+from sqlalchemy import Column, DateTime, Enum
 from sqlalchemy import Integer, Numeric, String, Text
-from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -27,28 +27,40 @@ class Category(Enum):
 class User(Base):
     __tablename__ = 'user'
 
-    # Not null.
+    # User ID column.
     id = Column(Integer, primary_key=True, index=True)
+
     email = Column(String, unique=True, index=True)
     password_hash = Column(String(64), nullable=False)
-    category = Column(Category, nullable=False,
-                      default=Category.patient)
 
-    first_name = Column(String(32), nullable=True)
-    last_name = Column(String(32), nullable=True)
+    first_name = Column(String(32), index=True)
+    last_name = Column(String(32), index=True)
+
+    category = Column(Category, index=True,
+                      nullable=False,
+                      default=Category.patient)
 
     __mapper_args__ = {
         'polymorphic_identity': 'user',
         'polymorphic_on': category,
     }
 
+    # Password context.
+    pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+    def __repr__(self) -> str:
+        return f'User({self.email}, {self.category})'
+
+    @staticmethod
+    def hash_password(password: str) -> str:
+        return User.pwd_context.hash(password)
+
+    @staticmethod
+    def verify_password(password: str, hash_password: str) -> bool:
+        return User.pwd_context.verify(password, hash_password)
+
 
 class Patient(User):
-    __tablename__ = 'patient'
-
-    # id = Column(Integer, ForeignKey('user.id'),
-    #             primary_key=True, index=True)
-
     # Patient info.
     age = Column(Integer)
     contact = Column(String(15), index=True)
@@ -61,13 +73,25 @@ class Patient(User):
     occurences_of_illness = Column(Text)
     last_treatment = Column(DateTime)
 
-    user_id = Column(Integer, ForeignKey('user.id'))
-    relationship(User, foreign_keys=user_id)
-
     __mapper_args__ = {
         'polymorphic_identity': 'patient',
         'inherit_condition': User.category == Category.patient
     }
+
+    def __repr__(self) -> str:
+        return f'Patient({self.email})'
+
+
+class Practitoner(User):
+    practitioner_data = Column(String)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'practitioner',
+        'inherit_condition': User.category == Category.practitioner
+    }
+
+    def __repr__(self) -> str:
+        return f'Practitioner({self.email})'
 
 
 class Feature(Base):
