@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Body
+import srsly
 
 from app.backend.inference import SavedModel
 from app.schemas import model
@@ -27,9 +27,9 @@ router = APIRouter(
     tags=['models', 'predict'],
 )
 
-# Request sample.
-request_sample: Dict[str, str] = json.load(
-    open('app/sample/predict_heart_disease.json')
+# Request example.
+request_sample: Dict[str, Any] = srsly.read_json(
+    'app/sample/predict_heart_disease.json'
 )
 
 
@@ -39,7 +39,9 @@ request_sample: Dict[str, str] = json.load(
     tags=['predict'],
 )
 async def predict_heart_disease(
-    body: model.PredictionRequest = Body(..., example=request_sample),
+    body: model.PredictionRequest = Body(
+        ..., embed=True, example=request_sample
+    ),
 ) -> List[Dict[str, Any]]:
     """Make prediction given features.
 
@@ -66,7 +68,9 @@ async def predict_heart_disease(
 )
 async def predict_with_model(
     model_name: str,
-    body: model.PredictionRequest = Body(..., example=request_sample)
+    body: model.PredictionRequest = Body(
+        ..., embed=True, example=request_sample
+    )
 ) -> Dict[str, Any]:
     """Use a `model_name` to make prediction given model features.
 

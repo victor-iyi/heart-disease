@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 
 import pytest
-
 from httpx import AsyncClient
 
 from app.api import app
@@ -32,34 +32,17 @@ async def test_read_user() -> None:
 @pytest.mark.asyncio
 async def test_read_patient() -> None:
     """Test loading a single patient."""
-    patient_id = 2
-
     async with AsyncClient(app=app) as client:
+        patient_id = 2
         response = await client.get(f'/users/{patient_id}')
 
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_read_practitioner() -> None:
-    """Test loading a single practitioner."""
-    practitioner_id = 3
-
-    async with AsyncClient(app=app) as client:
-        response = await client.get(f'/users/{practitioner_id}')
-
-    assert response.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_create_user() -> None:
+async def test_register_user() -> None:
     """Test registering a user."""
-    user = {
-        'email': 'john@doe.com',
-        'password': 'Pa55w0rd',
-        'first_name': 'John',
-        'last_name': 'Doe',
-    }
+    user = json.load(open('app/sample/users_user_info.json'))
 
     async with AsyncClient(app=app) as client:
         response = await client.post('/users', data=user)
@@ -68,39 +51,11 @@ async def test_create_user() -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_patient() -> None:
+async def test_add_patient_info() -> None:
     """Test registering a patient."""
-    patient = {
-        'email': 'jane@doe.com',
-        'password': 'Pa55w0rd',
-        'first_name': 'Jane',
-        'last_name': 'Doe',
-        'category': 'Patient',
-    }
+    patient = json.load(open("app/samples/users_patient_info.json"))
 
     async with AsyncClient(app=app) as client:
         response = await client.post('/users/patient', data=patient)
-
-    assert response.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_create_practitioner() -> None:
-    """Test registering a medical practitioner."""
-    practitioner = {
-        'email': 'john@doe.com',
-        'password': 'Pa55w0rd',
-        'first_name': 'John',
-        'last_name': 'Doe',
-        'category': 'Medical Practitioner',
-    }
-
-    async with AsyncClient(app=app) as client:
-        response = await client.post('/users/practitioner', data=practitioner)
-
-    assert response.status_code == 200
-
-    async with AsyncClient(app=app) as client:
-        response = await client.post('/users/practitioner', data=practitioner)
 
     assert response.status_code == 200

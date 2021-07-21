@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import os
-import json
 from typing import Any, Dict, List
 
+import srsly
+
 from dotenv import find_dotenv, load_dotenv
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 from sqlalchemy.orm.session import Session
 
 from app.backend.inference import SavedModel
@@ -37,10 +38,6 @@ router = APIRouter(
 # Local .env or env files.
 load_dotenv(find_dotenv())
 
-# Request example.
-single_example: Dict[str, str] = json.load(
-    open('app/sample/predict_heart_disease.json', 'r')
-)
 
 # Path to `saved_model.pb`.
 MODEL_DIR: str = os.getenv('MODEL_DIR', FS.SAVED_MODELS)
@@ -86,7 +83,10 @@ async def metadata() -> Dict[str, str]:
     tags=['models'],
 )
 async def add_features(
-    features: model.Features, db: Session = Depends(get_db)
+    features: model.Features = Body(
+        ..., embed=True,
+        example=srsly.read_json('app/sample/models_feature.json')
+    ), db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     """Add prediction data to the database.
 
