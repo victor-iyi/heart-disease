@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import concurrent.futures
 import os
 
+from functools import partial
 from typing import Any, Dict, List, Optional, TypeVar, Union
 
 import numpy as np
@@ -72,6 +74,7 @@ class SavedModel:
         Returns:
             List[str]: List of (trained) loaded models.
         """
+
         return list(self._models.keys())
 
     def predict(
@@ -92,27 +95,42 @@ class SavedModel:
 
         Returns:
             Dict[str, Any]: Output of the saved model.
+            ```
+            {
+                model_name: string
+                has_heart_disease: boolean
+                confidence_score: float
+            }
+            ```
         """
         if not any(name, model):
             raise ValueError('One of `name` or `model` must be provided.')
 
         # Use given model or model name.
-        model = model or self._models[name]
-        result =  model(inputs)
+        try:
+            model: base.Model = model or self._models[name]
+        except KeyError:
+            raise KeyError('Model name not found. See `list_available_models`')
 
-        prediction = result['prediction']
+        # Get model prediction.
+        result = model(inputs)
+        prediction: np.ndarray = np.cast[bool](result['prediction'])
+
+        # Convert confidence to (%) or None if no confidence score.
         confidence = result['confidence']
+        if confidence is not None:
+            confidence: float = max(confidence) * 100.0
 
-        result.update({
+        return {
             # Name of the model used.
             'model_name': model.name,
 
             # Has heart disease or not (true/false).
-            'has_heart_disease': np.cast[bool](prediction),
+            'has_heart_disease': prediction.tolist(),
 
-            # Update `confidence` to (%) and as `has_heart_disease`.
-            'confidence': confidence * 100 if confidence is not None else None,
-        })
+            # Update `confidence` to (%).
+            'confidence_score': confidence,
+        }
 
         return result
 
@@ -126,17 +144,34 @@ class SavedModel:
         Returns:
             List[Dict[str, Any]]: List of formatted outputs for each model.
         """
+
+        # Returned results.
         results = []
 
-        for name, model in self._models.items():
-            try:
-                result = self.predict(
-                    inputs=inputs, model=model, name=name
-                )
+        # Create a partial input function passing the input features.
+        func = partial(self.predict, inputs=inputs)
 
-                results.append(result)
-            except Exception as e:
-                Log.exception(e)
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            futures = [
+                executor.submit(func, model=model)
+                for model in self._models.values()
+            ]
+
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    results.append(future.result())
+                except Exception as e:
+                    Log.exception(e)
+
+        # for name, model in self._models.items():
+        #     try:
+        #         result = self.predict(
+        #             inputs=inputs, model=model, name=name
+        #         )
+
+        #         results.append(result)
+        #     except Exception as e:
+        #         Log.exception(e)
 
         return results
 

@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, overload, Union
 
 from fastapi import APIRouter, Body
+from pydantic.errors import EnumMemberError
 import srsly
 
 from app.backend.inference import SavedModel
@@ -33,35 +34,43 @@ request_sample: Dict[str, Any] = srsly.read_json(
 )
 
 
-@router.get(
+@router.post(
     '/',
-    response_model=List[model.PredictionResponse],
+    response_model=Union[model.PredictionResponse,
+                         model.PredictionResponse],
     tags=['predict'],
 )
 async def predict_heart_disease(
     body: model.PredictionRequest = Body(
         ..., embed=True, example=request_sample
     ),
-) -> List[Dict[str, Any]]:
+) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """Make prediction given features.
 
-    Note:
-        Uses model with the best accuracy. To use a specific model; see
-        endpoint `GET: /predict/{model_name}`.
-
     Args:
-        body (PredictionRequest, optional): Prediction body.
-            Defaults to `Body(..., example=request_sample)`
+        body (model.PredictionRequest, optional): Prediction body.
+            Defaults to Body( ..., embed=True, example=request_sample ).
+
+    Returns:
+        Union[Dict[str, Any], List[Dict[str, Any]]]:
+            Returns a result for each available model or
+            a single response if `model_name` is specified.
     """
     # Make predictions with all models.
     saved_model = SavedModel()
     data = SavedModel.data_to_array(body.data)
-    results = saved_model.predict_all(data)
 
-    return results
+    if body.model_name:
+        # Return a response for given `model_name`.
+        result = saved_model.predict(data, name=body.model_name)
+    else:
+        # Return a response for each available model.
+        result = saved_model.predict_all(data)
+
+    return result
 
 
-@router.get(
+@router.post(
     '/{model_name}',
     response_model=model.PredictionResponse,
     tags=['predict'],
