@@ -23,9 +23,6 @@ from app.schemas import users
 router = APIRouter(
     prefix='/users',
     dependencies=[Depends(get_db)],
-    responses={
-        400: 'User cannot be found!'
-    },
     tags=['users', 'patient', 'practitioner'],
 )
 
@@ -33,8 +30,7 @@ router = APIRouter(
 @router.get(
     '/{user_id}',
     response_model=users.UserInfo,
-    responses={400: 'User cannot be found!'},
-    tags=['users'],
+    tags=['users', 'patient', 'practitioner'],
 )
 async def read_user(
     user_id: int,
@@ -55,8 +51,7 @@ async def read_user(
 
 @router.get(
     '/{patient_id}',
-    response_model=users.Patient,
-    responses={400: 'Patient cannot be found!'},
+    response_model=users.PatientInfo,
     tags=['patient'],
 )
 async def read_patient(
@@ -69,7 +64,7 @@ async def read_patient(
         db (Session, optional): Database session. Defaults to Depends(get_db).
 
     Returns:
-        users.Patient: Patient schema.
+        users.PatientInfo: Patient schema.
     """
     # Get patient by id.
     return Patient.get_patient(db, patient_id)
@@ -78,7 +73,7 @@ async def read_patient(
 @router.post(
     '/',
     response_model=users.User,
-    tags=['users'],
+    tags=['users', 'patient', 'practitioner'],
 )
 async def register_user(
     user: users.UserInfo, db: Session = Depends(get_db)
@@ -93,7 +88,7 @@ async def register_user(
         HTTPException: 400 - User already exist.
 
     Returns:
-        users.User: Created user info.
+        users.UserInfo: Created user info.
     """
     # Get user by email.
     db_user = await User.get_user_by_email(db, user.email)
@@ -108,7 +103,7 @@ async def register_user(
 
 @router.post(
     '/patient',
-    response_model=users.Patient,
+    response_model=users.PatientInfo,
     tags=['patient'],
 )
 async def add_patient_info(
@@ -124,7 +119,7 @@ async def add_patient_info(
         HTTPException: 400 - Patient already exist.
 
     Returns:
-        users.Patient: Created patient info.
+        users.PatientInfo: Created patient info.
     """
     # Get patient by email.
     db_patient = await Patient.get_user_by_email(db, patient.email)

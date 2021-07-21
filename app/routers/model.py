@@ -30,6 +30,7 @@ from heart_disease.config.consts import FS
 
 router = APIRouter(
     prefix='/models',
+    dependencies=[Depends(get_db)],
     tags=['models'],
 )
 
@@ -56,7 +57,7 @@ async def available_models() -> List[str]:
     """Returns the list of models that are supported by API."""
 
     # Loaded saved model object.
-    saved_model = await SavedModel(model_dir=MODEL_DIR)
+    saved_model = SavedModel(model_dir=MODEL_DIR)
 
     return saved_model.list_available_models()
 
@@ -81,6 +82,7 @@ async def metadata() -> Dict[str, str]:
 @router.post(
     '/',
     response_model=model.Features,
+    dependencies=[Depends(get_db)],
     tags=['models'],
 )
 async def add_features(

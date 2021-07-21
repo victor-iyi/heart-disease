@@ -25,7 +25,6 @@ from app.schemas import model
 router = APIRouter(
     prefix='/predict',
     tags=['models', 'predict'],
-    responses={403: 'Operation forbidden!'},
 )
 
 # Request sample.
@@ -55,14 +54,14 @@ async def predict_heart_disease(
     # Make predictions with all models.
     saved_model = SavedModel()
     data = SavedModel.data_to_array(body.data)
-    results = await saved_model.predict_all(data)
+    results = saved_model.predict_all(data)
 
     return results
+
 
 @router.get(
     '/{model_name}',
     response_model=model.PredictionResponse,
-    responses={403: 'Operation forbidden!'},
     tags=['predict'],
 )
 async def predict_with_model(
@@ -78,6 +77,8 @@ async def predict_with_model(
     """
     # Make a prediction with a given model name.
     saved_model = SavedModel()
+
     data = SavedModel.data_to_array(body.data)
-    result = await saved_model.predict(data, name=model_name)
+    result = saved_model.predict(data, name=model_name)
+
     return result
