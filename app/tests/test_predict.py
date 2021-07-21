@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import pytest
+import srsly
+
 from httpx import AsyncClient
 
 from app.api import app
@@ -23,7 +24,7 @@ from app.backend.inference import SavedModel
 @pytest.mark.asyncio
 async def test_predict_heart_disease() -> None:
     """Test out a simple API request for prediction."""
-    request_data = json.load('app/sample/predict_heart_disease.json')
+    request_data = srsly.read_json('app/sample/predict_heart_disease.json')
 
     async with AsyncClient(app=app) as client:
         response = await client.get(
@@ -45,7 +46,7 @@ async def test_predict_with_model() -> None:
     """Test model prediction given a model name."""
 
     saved_model = SavedModel()
-    request_data = json.load('app/sample/predict-heart-disease.json')
+    request_data = srsly.read_json('app/sample/predict_heart_disease.json')
     model_name = saved_model.get_best_model().name
 
     async with AsyncClient(app=app) as client:

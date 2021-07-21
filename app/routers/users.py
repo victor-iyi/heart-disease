@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, HTTPException
+import srsly
+
+from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy.orm.session import Session
 
 from app.database.query import Patient, User
@@ -55,7 +57,8 @@ async def read_user(
     tags=['patient'],
 )
 async def read_patient(
-    patient_id: int, db: Session = Depends(get_db)
+    patient_id: int,
+    db: Session = Depends(get_db)
 ) -> users.PatientInfo:
     """Get patient by `patient_id`.
 
@@ -76,7 +79,11 @@ async def read_patient(
     tags=['users', 'patient', 'practitioner'],
 )
 async def register_user(
-    user: users.UserInfo, db: Session = Depends(get_db)
+    user: users.UserInfo = Body(
+        ..., embed=True,
+        example=srsly.read_json('app/sample/users_user_info.json')
+    ),
+    db: Session = Depends(get_db)
 ) -> users.UserInfo:
     """Create a new (unique) user.
 
@@ -107,7 +114,11 @@ async def register_user(
     tags=['patient'],
 )
 async def add_patient_info(
-    patient: users.PatientInfo, db: Session = Depends(get_db)
+    patient: users.PatientInfo = Body(
+        ..., emed=True,
+        example=srsly.read_json('app/sample/users_patient_info.json')
+    ),
+    db: Session = Depends(get_db)
 ) -> users.PatientInfo:
     """Add patient info to a given user.
 

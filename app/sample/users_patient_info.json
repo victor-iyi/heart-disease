@@ -1,0 +1,17 @@
+{
+  "email": "john@doe.com",
+  "password": "Pa55w0rd",
+  "first_name": "John",
+  "last_name": "Doe",
+  "category": "Patient",
+  "age": 25,
+  "contact": "+1 431 555-1234",
+  "history": "Full patient medical history",
+  "aliment": "Underlying medical aliment",
+  "last_visit_diagonosis": "2021-07-23 @ 07:00",
+  "guardian_fullname": "Jane Doe",
+  "guardian_email": "jane@doe.com",
+  "guardian_phone": "+1 555-4321",
+  "occurences_of_illness": "Full description of recent illness",
+  "last_treatment": "2021-03-11 @ 15:30"
+}

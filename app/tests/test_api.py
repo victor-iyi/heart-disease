@@ -23,7 +23,7 @@ async def test_doc_redirect():
     """Redirect docs from `https://domain.com/docs`
     to `https://domain.com/<prefix>/docs`
     """
-    async with AsyncClient(app) as client:
+    async with AsyncClient(app=app) as client:
         response = await client.get('/')
 
     assert response.history[0].status_code == 302
