@@ -351,7 +351,7 @@ class Model(metaclass=ABCMeta):
         """
         path = path or self._path
 
-        if os.path.isfile(path):
+        if not os.path.isfile(path):
             raise FileNotFoundError(f'{path} could not be found.')
 
         self._model = joblib.load(path)
