@@ -22,7 +22,7 @@ import numpy as np
 
 from app.schemas import model
 from heart_disease import base
-from heart_disease import models
+from heart_disease.models import Models
 from heart_disease.config import FS, Log
 
 
@@ -40,23 +40,6 @@ class SavedModel:
         if not os.path.isdir(model_dir):
             raise FileNotFoundError(f'{self.model_dir} was not found.')
 
-        # Name & model mapping.
-        self._models: Dict[str, base.Model] = {}
-
-        for model_file in os.listdir(self.model_dir):
-            # Saved model name and full path.
-            path = os.path.join(self.model_dir, model_file)
-            Log.info(f'Loading {path}...')
-
-            # Get model via it's saved name.
-            model_name = model_file.removesuffix('.joblib')
-            _model: base.Model = models.MODELS[model_name]()
-
-            _model.load_model(path)
-            Log.info(f'Loaded {_model.name} from {path}')
-
-            self._models[model_name] = _model
-
     def __getitem__(self, item: str) -> base.Model:
         """Get model by it's name.
 
@@ -66,7 +49,7 @@ class SavedModel:
         Returns:
             base.Model: Corresponding (trained) loaded model class.
         """
-        return self._models[item]
+        return Models.get_model(item)
 
     def list_available_models(self) -> List[str]:
         """List all the available (trained) models.
@@ -75,13 +58,10 @@ class SavedModel:
             List[str]: List of (trained) loaded models.
         """
 
-        return list(self._models.keys())
+        return Models.names()
 
     def predict(
-        self,
-        inputs: _Array, *,
-        name: Optional[str] = None,
-        model: Optional[base.Model] = None
+        self, inputs: _Array, name: Union[str, Models] = None,
     ) -> Dict[str, Any]:
         """Makes prediction from saved model given unknown features.
 
@@ -89,8 +69,6 @@ class SavedModel:
             inputs (_Array): Array-like of shape (n_samples, n_features).
                 Unknown features to be predicted.
             name (Optional[str], optional): Name of the model to use.
-                Defaults to None.
-            model (Optional[base.Model], optional): Use model if name is not given.
                 Defaults to None.
 
         Returns:
@@ -103,14 +81,8 @@ class SavedModel:
             }
             ```
         """
-        if not any(name, model):
-            raise ValueError('One of `name` or `model` must be provided.')
-
         # Use given model or model name.
-        try:
-            model: base.Model = model or self._models[name]
-        except KeyError:
-            raise KeyError('Model name not found. See `list_available_models`')
+        model = Models.get_model(name)
 
         # Get model prediction.
         result = model(inputs)
@@ -153,8 +125,8 @@ class SavedModel:
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [
-                executor.submit(func, model=model)
-                for model in self._models.values()
+                executor.submit(func, name)
+                for name in Models.names()
             ]
 
             for future in concurrent.futures.as_completed(futures):
@@ -162,16 +134,6 @@ class SavedModel:
                     results.append(future.result())
                 except Exception as e:
                     Log.exception(e)
-
-        # for name, model in self._models.items():
-        #     try:
-        #         result = self.predict(
-        #             inputs=inputs, model=model, name=name
-        #         )
-
-        #         results.append(result)
-        #     except Exception as e:
-        #         Log.exception(e)
 
         return results
 
@@ -187,11 +149,3 @@ class SavedModel:
         """
         return np.array(data.dict().values())
 
-    @property
-    def models(self) -> Dict[str, base.Model]:
-        """Mapping of model names and model classifier object.
-
-        Returns:
-            Dict[str, base.Model]: Model mapping.
-        """
-        return self._models

@@ -211,12 +211,13 @@ class Model(metaclass=ABCMeta):
         else:
             raise TypeError('self.model is not defined')
 
-    def metrics(self, X: _Array, y: _Array, *,
-                plot: Optional[bool] = True,
-                labels: Optional[_Array] = None,
-                sample_weight: Optional[_Array] = None,
-                normalize: Optional[Literal['true', 'pred', 'all']] = None
-                ) -> _Array:
+    def metrics(
+            self, X: _Array, y: _Array, *,
+            plot: Optional[bool] = True,
+            labels: Optional[_Array] = None,
+            sample_weight: Optional[_Array] = None,
+            normalize: Optional[Literal['true', 'pred', 'all']] = None
+    ) -> _Array:
         """Compute confusion matrix to evaluate the accuracy of a
         classification.
 
