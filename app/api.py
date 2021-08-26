@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
 from app.database import Base, engine
@@ -23,12 +24,28 @@ from app.routers import model, predict, users
 # Create the database.
 Base.metadata.create_all(bind=engine)
 
+# CORS origins.
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+
 # App object.
 app = FastAPI(
     title='heart-disease',
     version='1.0',
     description='Predict heart disease with different ML algorithms.',
     dependencies=[Depends(get_db)],
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
 )
 
 # Add routers.

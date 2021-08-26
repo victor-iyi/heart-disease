@@ -1,33 +1,33 @@
 # Web API
-fastapi==0.65.1
-pydantic[email]==1.8.2
-httpx==0.18.2
-uvicorn[standard]==0.13.4
+fastapi
+pydantic[email]
+httpx
+uvicorn[standard]
 
 # Testing
-pytest==6.2.4
-pytest-cov==2.12.0
-pytest-asyncio==0.15.1
+pytest
+pytest-cov
+pytest-asyncio
 
 # Database
-SQLAlchemy==1.4.21
+SQLAlchemy
 
 # Cryptography
-passlib[bcrypt]==1.7.4
+passlib[bcrypt]
 
 # Machine Learning/Data science
-scikit-learn==0.24.2
-numpy==1.20.3
-pandas==1.2.4
+numpy
+pandas
+scikit-learn
 
 # Visualization
-jupyter>=1.0
-matplotlib==3.4.2
-seaborn==0.11.1
+jupyter
+matplotlib
+seaborn
 
 # Others
-colorlog==5.0.1
-joblib==1.0.1
-python-dotenv==0.17.1
-pyyaml==5.4.1
-srsly==2.4.1
+colorlog
+joblib
+python-dotenv
+pyyaml
+srsly
